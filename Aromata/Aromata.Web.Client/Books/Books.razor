@@ -1,0 +1,76 @@
+@page "/books"
+@using Aromata.Application.Books.GetBooks
+@using Aromata.Application.Common.Models
+@using Aromata.Web.Client.Common
+@using Microsoft.AspNetCore.WebUtilities
+@inject NavigationManager NavigationManager
+@inject HttpClient HttpClient
+@if (_books is not null)
+{
+    <div class="d-flex flex-column gap-4">
+        <div class="d-flex flex-wrap gap-2">
+            @foreach (var book in _books.Items)
+            {
+                <MudCard>
+                    <MudCardHeader Class="d-flex flex-column">
+                        <MudText Typo="Typo.h6">@book.Title</MudText>
+                        <MudText Typo="Typo.body1">@book.Author</MudText>
+                    </MudCardHeader>
+                    <MudCardContent>
+
+                    </MudCardContent>
+                    <MudCardActions Class="d-flex justify-end">
+                        <MudButton Variant="Variant.Filled" Color="Color.Primary" Href="@($"/books/{book.Id}")">Go</MudButton>
+                    </MudCardActions>
+                </MudCard>
+            }
+        </div>
+        <MudPagination Selected="@_books.PageNumber" SelectedChanged="@ChangePage" Count="@_books.TotalPages"
+                       BoundaryCount="1" MiddleCount="2"/>
+    </div>
+}
+
+
+
+
+@code {
+    [Parameter, SupplyParameterFromQuery] public int? Page { get; set; }
+    private int PageNumber => Page is null or < 1 ? 1 : Page.Value;
+
+    private PaginatedResult<BookDto>? _books;
+
+    private void ChangePage(int page)
+    {
+        var uri = NavigationManager.GetUriWithQueryParameter(nameof(Page), page);
+        NavigationManager.NavigateTo(uri);
+    }
+
+    protected override async Task OnParametersSetAsync()
+    {
+        await LoadBooks();
+    }
+
+    private async Task LoadBooks()
+    {
+        try
+        {
+            var par = new Dictionary<string, string?>()
+            {
+                [nameof(GetBooksQuery.PageNumber)] = PageNumber.ToString(),
+                [nameof(GetBooksQuery.PageSize)] = 10.ToString(),
+                [nameof(GetBooksQuery.Desc)] = true.ToString(),
+                [nameof(GetBooksQuery.SortBy)] = nameof(BookDto.Title),
+            };
+            var uri = QueryHelpers.AddQueryString("/api/books", par);
+            _books = await HttpClient.GetFromJsonAsync<PaginatedResult<BookDto>>(uri);
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine(e);
+            throw;
+        }
+        
+    }
+
+
+}

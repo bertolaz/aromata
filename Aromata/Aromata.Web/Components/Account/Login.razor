@@ -1,0 +1,104 @@
+@page "/Account/Login"
+@attribute [ExcludeFromInteractiveRouting]
+@using System.ComponentModel.DataAnnotations
+@using Aromata.Infrastructure.Identity
+@using Microsoft.AspNetCore.Identity
+@inject SignInManager<ApplicationUser> SignInManager
+@inject UserManager<ApplicationUser> UserManager
+@inject NavigationManager NavigationManager
+@layout AuthLayout
+<MudContainer Fixed="true">
+    <EditForm Model="@Model" OnValidSubmit="@Submit" FormName="Login" Enhance="true">
+        <DataAnnotationsValidator/>
+        <MudCard>
+            <MudCardHeader Class="d-flex justify-content-center pa-2">
+                <MudText Align="Align.Center" Typo="Typo.h1">Aromata</MudText>
+            </MudCardHeader>
+            <MudCardContent Class="d-flex flex-column gap-2">
+                <MudStaticTextField InputType="@InputType.Email" @bind-Value="@Model!.Email" Label="Email"
+                                    For="() => Model!.Email"/>
+                <MudStaticTextField InputType="@InputType.Password" @bind-Value="@Model!.Password" Label="Password"
+                              For="() => Model!.Password"/>
+                <div class="d-flex justify-space-between gap-2 mt-2">
+                    <MudStaticCheckBox @bind-Value="@Model!.RememberMe" Color="Color.Primary" Label="Remember me"/>
+                    <MudButton ButtonType="ButtonType.Submit" Variant="Variant.Filled" Color="Color.Primary">Login
+                    </MudButton>
+                </div>
+                <div>
+                    @if (!string.IsNullOrEmpty(_errorMessage))
+                    {
+                        <MudAlert Severity="@Severity.Warning">@_errorMessage</MudAlert>
+                    }
+                </div>
+            </MudCardContent>
+        </MudCard>
+    </EditForm>
+</MudContainer>
+<MudCard>
+
+</MudCard>
+
+@code {
+
+    [SupplyParameterFromForm(FormName = "Login")]
+    public LoginModel? Model { get; set; }
+
+    [SupplyParameterFromQuery, Parameter] public string ReturnUrl { get; set; } = "/";
+
+    private string? _errorMessage;
+
+    protected override void OnInitialized()
+    {
+        Model ??= new LoginModel();
+    }
+
+
+    public class LoginModel
+    {
+        [Required, EmailAddress] public string? Email { get; set; }
+        [Required] public string? Password { get; set; }
+        public bool RememberMe { get; set; }
+    }
+
+    private async Task Submit()
+    {
+        var user = await UserManager.FindByEmailAsync(Model!.Email!);
+        if (user is null)
+        {
+            _errorMessage = "Incorrect user or password";
+            return;
+        }
+
+        var r = await SignInManager.PasswordSignInAsync(user, Model.Password!, Model.RememberMe, true);
+        if (!r.Succeeded)
+        {
+            _errorMessage = "Incorrect user or password";
+            return;
+        }
+
+        if (r.IsLockedOut)
+        {
+            _errorMessage = "User is locked out. retry again later";
+            return;
+        }
+
+        if (r.RequiresTwoFactor)
+        {
+            var uri = NavigationManager.GetUriWithQueryParameters("/Account/2fa", new Dictionary<string, object?>
+            {
+                [nameof(ReturnUrl)] = ReturnUrl
+            });
+            NavigationManager.NavigateTo(uri, true);
+            return;
+        }
+
+        if (r.IsNotAllowed)
+        {
+            _errorMessage = "User is allowed to sign in";
+            return;
+        }
+
+        NavigationManager.NavigateTo(ReturnUrl, true);
+    }
+
+}

@@ -1,0 +1,23 @@
+@page "/Account/Logout"
+@attribute [ExcludeFromInteractiveRouting]
+@using Aromata.Infrastructure.Identity
+@using Microsoft.AspNetCore.Identity
+@using Microsoft.AspNetCore.WebUtilities
+@inject SignInManager<ApplicationUser> SignInManager
+@inject NavigationManager NavigationManager
+
+@code {
+
+    [Parameter, SupplyParameterFromQuery] public string? ReturnUrl { get; set; } = "/";
+
+    protected override async Task OnInitializedAsync()
+    {
+        await SignInManager.SignOutAsync();
+        var uri = QueryHelpers.AddQueryString("/Account/Login", new Dictionary<string, string?>()
+        {
+            [nameof(ReturnUrl)] = ReturnUrl
+        });
+        NavigationManager.NavigateTo(uri, true);
+    }
+
+}

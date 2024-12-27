@@ -1,0 +1,47 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Aromata.Web", "Aromata\Aromata.Web\Aromata.Web.csproj", "{4CA2B7E6-87AD-4D5D-8B8F-99EA2D4E9AEA}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Aromata.Web.Client", "Aromata\Aromata.Web.Client\Aromata.Web.Client.csproj", "{E20E8A08-B979-43DA-817B-385784910D08}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Aromata.Domain", "Aromata\Aromata.Domain\Aromata.Domain.csproj", "{5BDE795D-E334-4229-836F-CF6FC233AA44}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Aromata.Application", "Aromata\Aromata.Application\Aromata.Application.csproj", "{CF8B36E3-E197-42C2-88D9-00D3CC32D1C1}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Aromata.Infrastructure", "Aromata\Aromata.Infrastructure\Aromata.Infrastructure.csproj", "{908672E8-A6C1-4BA0-B8DD-EADDBE0475E1}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution items", "Solution items", "{C441107C-B18A-47E6-BBD2-EDCA8F25BC27}"
+	ProjectSection(SolutionItems) = preProject
+		Directory.Packages.props = Directory.Packages.props
+		Directory.Build.props = Directory.Build.props
+		.gitignore = .gitignore
+	EndProjectSection
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{4CA2B7E6-87AD-4D5D-8B8F-99EA2D4E9AEA}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{4CA2B7E6-87AD-4D5D-8B8F-99EA2D4E9AEA}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{4CA2B7E6-87AD-4D5D-8B8F-99EA2D4E9AEA}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{4CA2B7E6-87AD-4D5D-8B8F-99EA2D4E9AEA}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E20E8A08-B979-43DA-817B-385784910D08}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E20E8A08-B979-43DA-817B-385784910D08}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E20E8A08-B979-43DA-817B-385784910D08}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E20E8A08-B979-43DA-817B-385784910D08}.Release|Any CPU.Build.0 = Release|Any CPU
+		{5BDE795D-E334-4229-836F-CF6FC233AA44}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{5BDE795D-E334-4229-836F-CF6FC233AA44}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{5BDE795D-E334-4229-836F-CF6FC233AA44}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{5BDE795D-E334-4229-836F-CF6FC233AA44}.Release|Any CPU.Build.0 = Release|Any CPU
+		{CF8B36E3-E197-42C2-88D9-00D3CC32D1C1}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{CF8B36E3-E197-42C2-88D9-00D3CC32D1C1}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{CF8B36E3-E197-42C2-88D9-00D3CC32D1C1}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{CF8B36E3-E197-42C2-88D9-00D3CC32D1C1}.Release|Any CPU.Build.0 = Release|Any CPU
+		{908672E8-A6C1-4BA0-B8DD-EADDBE0475E1}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{908672E8-A6C1-4BA0-B8DD-EADDBE0475E1}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{908672E8-A6C1-4BA0-B8DD-EADDBE0475E1}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{908672E8-A6C1-4BA0-B8DD-EADDBE0475E1}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+EndGlobal

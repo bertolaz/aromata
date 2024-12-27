@@ -1,0 +1,76 @@
+@using Aromata.Application.Books.GetBooks
+@inject HttpClient Httpclient
+@inject ISnackbar Snackbar
+@inject ILogger<BookInfo> Logger
+@if (BookDto is not null)
+{
+    <MudCard>
+        <MudCardHeader>
+            <MudText Typo="Typo.h6">@BookDto.Title</MudText>
+        </MudCardHeader>
+    </MudCard>
+}
+
+@if (_showNotFound)
+{
+    <MudText>Book not found!</MudText>
+}
+@if (_showError)
+{
+    <MudButton OnClick="@LoadBook">Retry</MudButton>
+}
+
+@if (_loading)
+{
+    <MudCard>
+        <MudCardHeader>
+            <MudSkeleton Animation="Animation.Pulse" SkeletonType="SkeletonType.Text" Width="100%" Height="20px"></MudSkeleton>
+            <MudSkeleton Animation="Animation.Pulse" SkeletonType="SkeletonType.Text" Width="100%" Height="20px"></MudSkeleton>
+        </MudCardHeader>
+    </MudCard>
+}
+
+
+
+@code {
+    [Parameter] public Guid BookId { get; set; }
+
+    private BookDto? BookDto;
+
+    private bool _showNotFound;
+    private bool _showError;
+
+    private bool _loading;
+
+    protected override async Task OnParametersSetAsync()
+    {
+        await LoadBook();
+    }
+
+    private async Task LoadBook()
+    {
+        try
+        {
+            _loading = true;
+            BookDto = null;
+            _showNotFound = false;
+            _showError = false;
+            StateHasChanged();
+            BookDto = await Httpclient.GetFromJsonAsync<BookDto>($"/api/books/{BookId}");
+            if (BookDto is null)
+            {
+                _showNotFound = true;
+            }
+        }
+        catch (Exception e)
+        {
+            Logger.LogError(e, "Error retrieving book with Id {BookId}", BookId);
+            _showError = true;
+        }
+        finally
+        {
+            _loading = false;
+        }
+    }
+
+}

@@ -1,0 +1,23 @@
+@inherits LayoutComponentBase
+@inject NavigationManager NavigationManager
+<MudThemeProvider/>
+<MudLayout>
+    <MudMainContent>
+        @Body
+    </MudMainContent>
+</MudLayout>
+
+@code {
+    [CascadingParameter] private HttpContext? HttpContext { get; set; }
+
+
+    protected override void OnInitialized()
+    {
+        if (HttpContext is null)
+        {
+            var uri = NavigationManager.Uri;
+            NavigationManager.NavigateTo(uri, true);
+        }
+    }
+
+}

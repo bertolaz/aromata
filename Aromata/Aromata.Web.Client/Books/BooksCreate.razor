@@ -1,0 +1,58 @@
+@page "/books/create"
+@using System.ComponentModel.DataAnnotations
+@using Aromata.Application.Books.CreateBookCommand
+@inject HttpClient Httpclient
+@inject ILogger<BooksCreate> Logger
+@inject NavigationManager NavigationManager
+@inject ISnackbar Snackbar
+<EditForm Model="@_model" OnValidSubmit="@Submit">
+    <DataAnnotationsValidator/>
+    <MudCard>
+        <MudCardHeader>
+            <MudText Typo="Typo.h5">Create a new book!</MudText>
+        </MudCardHeader>
+        <MudCardContent>
+            <MudTextField Label="Title" @bind-Value="_model.Title" For="() => _model.Title"/>
+            <MudTextField Label="Author" @bind-Value="_model.Author"  For="() => _model.Author"/>
+        </MudCardContent>
+        <MudCardActions>
+            <MudButton Color="Color.Primary" ButtonType="ButtonType.Submit" Variant="@Variant.Filled">Create</MudButton>
+        </MudCardActions>
+    </MudCard>
+</EditForm>
+
+
+
+@code {
+
+    private readonly InputModel _model = new();
+
+    private class InputModel
+    {
+        [Required(AllowEmptyStrings = false), MaxLength(150)]
+        public string? Title { get; set; }
+        [MaxLength(150)]
+        public string? Author { get; set; }
+    }
+
+    private async Task Submit()
+    {
+        try
+        {
+            var res = await Httpclient.PostAsJsonAsync("/api/books", new CreateBookCommand()
+            {
+                Author = _model.Author!,
+                Title = _model.Title!
+            });
+            res.EnsureSuccessStatusCode();
+            var id = await res.Content.ReadFromJsonAsync<Guid>();
+            NavigationManager.NavigateTo($"/books/{id}");
+        }
+        catch (Exception e)
+        {
+            Logger.LogError(e, "Error creating book {ErrorMessage}", e.Message);
+            Snackbar.Add("An error occurred", Severity.Error);
+        }
+    }
+
+}
