@@ -1,0 +1,141 @@
+@page "/recipes"
+@using Aromata.Application.Books.GetBooks
+@using Aromata.Application.Common.Models
+@using Aromata.Application.Recipes.GetRecipes
+@using Aromata.Web.Client.Common
+@using Microsoft.AspNetCore.WebUtilities
+@inject HttpClient Httpclient
+@inject NavigationManager NavigationManager
+@if (_recipes is not null)
+{
+    <div class="relative d-flex flex-column gap-2">
+        <MudTextField Label="Search" @bind-Value="_search" @bind-Value:after="OnSearch" AutoFocus="true"/>
+        <MudList T="string">
+            @foreach (var recipe in _recipes.Items)
+            {
+                <MudCard @key="recipe.RecipeId">
+                    <MudCardHeader>
+                        <MudText><strong>Title:</strong>@recipe.RecipeTitle</MudText>
+                    </MudCardHeader>
+                    <MudCardContent>
+                        <MudText><strong>Book:</strong>@recipe.BookTitle</MudText>
+                        <MudText><strong>Author:</strong>@($"{recipe.BookAuthor ?? "-"}")</MudText>
+                        <MudText><strong>Page:</strong>@($"{recipe.Page.ToString() ?? "-"}")</MudText>
+                    </MudCardContent>
+                    <MudCardActions Class="d-flex justify-end">
+                        <MudButton Color="Color.Primary" Href=@($"/recipes/${recipe.RecipeId}")>Go</MudButton>
+                    </MudCardActions>
+                </MudCard>
+            }
+        </MudList>
+        <div class="d-flex justify-center" style="width: 100%">
+            <MudPagination Selected="@_recipes.PageNumber"
+                           SelectedChanged="@(v => NavigationManager.NavigateTo(NavigationManager.GetUriWithQueryParameter(nameof(Page), v)))"
+                           Count="@_recipes.TotalPages"
+                           BoundaryCount="1" MiddleCount="2"/>
+        </div>
+        <MudOverlay Absolute="true" Visible="@_loading">
+            <MudProgressCircular Color="@Color.Primary" Indeterminate="true"/>
+        </MudOverlay>
+    </div>
+}
+
+
+@code {
+    [SupplyParameterFromQuery] private string? Search { get; set; }
+    [SupplyParameterFromQuery] private int? Page { get; set; }
+    [CascadingParameter] private ErrorHandler ErrorHandler { get; set; } = null!;
+    private string? _search;
+
+    private bool _loading;
+    private PaginatedResult<RecipeVm>? _recipes;
+
+    protected override async Task OnParametersSetAsync()
+    {
+        _search = Search;
+        await GetRecipes();
+    }
+
+    private void OnSearch()
+    {
+        var uri = NavigationManager.GetUriWithQueryParameters(new Dictionary<string, object?>()
+        {
+            { "Page", 1 },
+            { "Search", _search },
+        });
+        NavigationManager.NavigateTo(uri);
+    }
+
+    private async Task GetRecipes()
+    {
+        try
+        {
+            _loading = true;
+            var filter = FilterBuilder.Create()
+                .Like("Title", _search, false, () => !string.IsNullOrEmpty(_search))
+                .Build();
+
+            var par = new Dictionary<string, string?>()
+            {
+                { $"{nameof(GetRecipesQuery.Page)}", $"{Page ?? 1}" },
+                { $"{nameof(GetRecipesQuery.Filter)}", filter },
+            };
+
+            var uri = QueryHelpers.AddQueryString("/api/recipes", par);
+
+            var recipes = await Httpclient.GetFromJsonAsync<PaginatedResult<RecipeDto>>(uri);
+
+            var bookIds = recipes!.Items.Select(x => x.BookId.ToString()).Distinct();
+
+            var bookFilter = FilterBuilder.Create()
+                .In(nameof(BookDto.Id), bookIds.ToArray()).Build();
+
+            var bookParameters = new Dictionary<string, string?>()
+            {
+                { $"{nameof(GetBooksQuery.Page)}", "1" },
+                { $"{nameof(GetBooksQuery.Filter)}", bookFilter },
+            };
+            var bookUri = QueryHelpers.AddQueryString("/api/books", bookParameters);
+
+            var books = (await Httpclient.GetFromJsonAsync<PaginatedResult<BookDto>>(bookUri))!.Items.ToDictionary(x => x.Id, x => x);
+
+            var vms = recipes.Items.Select(x => new RecipeVm()
+            {
+                BookId = x.BookId,
+                RecipeId = x.Id,
+                BookAuthor = books[x.BookId].Author,
+                BookTitle = books[x.BookId].Title,
+                Page = x.Page,
+                RecipeTitle = x.Title
+            }).ToList();
+
+            _recipes = new PaginatedResult<RecipeVm>()
+            {
+                Items = vms,
+                PageSize = recipes.PageSize,
+                PageNumber = recipes.PageNumber,
+                TotalPages = recipes.TotalPages,
+                TotalCount = recipes.TotalCount
+            };
+        }
+        catch (Exception e)
+        {
+            ErrorHandler.ProcessError(e);
+        }
+        finally
+        {
+            _loading = false;
+        }
+    }
+
+    private record RecipeVm
+    {
+        public string? RecipeTitle { get; set; }
+        public string? BookTitle { get; set; }
+        public string? BookAuthor { get; set; }
+        public int? Page { get; set; }
+        public Guid BookId { get; set; }
+        public Guid RecipeId { get; set; }
+    }
+
+}

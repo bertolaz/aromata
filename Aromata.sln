@@ -17,6 +17,10 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution items", "Solution 
 		.gitignore = .gitignore
 	EndProjectSection
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ServiceDefaults", "Aromata\ServiceDefaults\ServiceDefaults.csproj", "{60D9785B-E5B9-4F55-BB7A-956078CE2EC6}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Aromata.AppHost", "Aromata\Aromata.AppHost\Aromata.AppHost.csproj", "{1D2FDA35-58A1-42E0-B5EC-97CE8CFA43B2}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -43,5 +47,13 @@ Global
 		{908672E8-A6C1-4BA0-B8DD-EADDBE0475E1}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{908672E8-A6C1-4BA0-B8DD-EADDBE0475E1}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{908672E8-A6C1-4BA0-B8DD-EADDBE0475E1}.Release|Any CPU.Build.0 = Release|Any CPU
+		{60D9785B-E5B9-4F55-BB7A-956078CE2EC6}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{60D9785B-E5B9-4F55-BB7A-956078CE2EC6}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{60D9785B-E5B9-4F55-BB7A-956078CE2EC6}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{60D9785B-E5B9-4F55-BB7A-956078CE2EC6}.Release|Any CPU.Build.0 = Release|Any CPU
+		{1D2FDA35-58A1-42E0-B5EC-97CE8CFA43B2}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{1D2FDA35-58A1-42E0-B5EC-97CE8CFA43B2}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{1D2FDA35-58A1-42E0-B5EC-97CE8CFA43B2}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{1D2FDA35-58A1-42E0-B5EC-97CE8CFA43B2}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal

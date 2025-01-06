@@ -1,10 +1,12 @@
 using Ardalis.GuardClauses;
 using Aromata.Application;
 using Aromata.Infrastructure;
+using Aromata.Infrastructure.Data;
 using Aromata.Web;
 using Aromata.Web.Components;
 using Aromata.Web.Infrastructure;
 using MudBlazor.Services;
+using ServiceDefaults;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -18,6 +20,7 @@ builder.Services.AddCascadingAuthenticationState();
 builder.AddApplicationServices();
 builder.AddInfrastructureServices();
 builder.AddWebServices();
+builder.AddServiceDefaults();
 
 var app = builder.Build();
 
@@ -26,12 +29,11 @@ if (app.Environment.IsDevelopment())
 {
     app.UseWebAssemblyDebugging();
     app.UseMigrationsEndPoint();
-    //await app.ApplyMigrations();
     var adminEmail = app.Configuration["AdminEmail"];
     var adminPassword = app.Configuration["AdminPassword"];
     Guard.Against.Null(adminEmail);
     Guard.Against.Null(adminPassword);
-    await app.SeedAdminUser(adminEmail, adminPassword);
+    await app.InitialiseDatabaseAsync(adminEmail, adminPassword);
 }
 else
 {

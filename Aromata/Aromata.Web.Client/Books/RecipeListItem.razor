@@ -1,0 +1,19 @@
+@using Aromata.Application.Recipes.GetRecipes
+@inject NavigationManager NavigationManager
+<MudListItem T="string" Style="width: 100%" Href="@($"/recipes/{Model.Id}")">
+    <ChildContent>
+        <div class="entry">
+            <div class="title">@Model.Title</div>
+            <div class="page">@(Model.Page?.ToString() ?? "-")</div>
+        </div>
+    </ChildContent>
+</MudListItem>
+
+@code {
+
+    [Parameter, EditorRequired] public RecipeDto Model { get; set; } = null!;
+    
+    
+
+
+}

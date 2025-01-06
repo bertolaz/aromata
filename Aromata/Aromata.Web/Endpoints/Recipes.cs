@@ -1,5 +1,6 @@
 using Aromata.Application.Recipes.CreateRecipe;
 using Aromata.Application.Recipes.DeleteRecipe;
+using Aromata.Application.Recipes.GetRecipe;
 using Aromata.Application.Recipes.GetRecipes;
 using Aromata.Application.Recipes.UpdateRecipe;
 using Aromata.Web.Infrastructure;
@@ -14,6 +15,7 @@ public class Recipes : EndpointGroupBase
     {
         app.MapGroup(this)
             .MapGet(GetRecipes, "/")
+            .MapGet(GetRecipe, "/{recipeId:guid}")
             .MapPost(CreateRecipe, "/")
             .MapDelete(DeleteRecipe, "/{recipeId:guid}")
             .MapPut(UpdateRecipe, "/{recipeId:guid}");
@@ -22,6 +24,14 @@ public class Recipes : EndpointGroupBase
     private static async Task<IResult> GetRecipes([AsParameters] GetRecipesQuery query, [FromServices] ISender sender)
     {
         return Results.Ok(await sender.Send(query));
+    }
+
+    private static async Task<IResult> GetRecipe([FromRoute] Guid recipeId, [FromServices] ISender sender)
+    {
+        return Results.Ok(await sender.Send(new GetRecipeQuery()
+        {
+            RecipeId = recipeId
+        }));
     }
 
     private static async Task<IResult> CreateRecipe([FromBody] CreateRecipeCommand command,

@@ -25,4 +25,19 @@
       <ProjectReference Include="..\Aromata.Domain\Aromata.Domain.csproj" />
     </ItemGroup>
 
+    <ItemGroup>
+      <EmbeddedResource Update="Common\Validation\ValidationResources.resx">
+        <Generator>ResXFileCodeGenerator</Generator>
+        <LastGenOutput>ValidationResources.Designer.cs</LastGenOutput>
+      </EmbeddedResource>
+    </ItemGroup>
+
+    <ItemGroup>
+      <Compile Update="Common\Validation\ValidationResources.Designer.cs">
+        <DesignTime>True</DesignTime>
+        <AutoGen>True</AutoGen>
+        <DependentUpon>ValidationResources.resx</DependentUpon>
+      </Compile>
+    </ItemGroup>
+
 </Project>

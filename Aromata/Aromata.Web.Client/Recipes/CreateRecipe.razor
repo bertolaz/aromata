@@ -1,0 +1,95 @@
+@page "/recipes/create"
+@using System.ComponentModel.DataAnnotations
+@using System.Net
+@using Aromata.Application.Recipes.CreateRecipe
+@using Aromata.Web.Client.Common.Validation
+@inject HttpClient HttpClient
+@inject NavigationManager NavigationManager
+
+@if (_found)
+{
+    <EditForm Model="@_model" OnValidSubmit="@Submit">
+        <DataAnnotationsValidator/>
+        <MudCard>
+            <MudCardHeader>
+                <MudText Typo="Typo.h5">Create a new Recipe!</MudText>
+            </MudCardHeader>
+            <MudCardContent>
+                <MudTextField Label="Title" @bind-Value="_model.Title" For="() => _model.Title" Clearable="true"/>
+                @* <MudTextField Label="Category" @bind-Value="_model.Category" For="() => _model.Category" *@
+                @*               Clearable="true"/> *@
+                <MudNumericField Label="Page" T="int?" Min="0" @bind-Value="_model.Page" For="() => _model.Page" Clearable="true"/>
+            </MudCardContent>
+            <MudCardActions Class="d-flex gap-2 justify-end">
+                <MudButton Color="Color.Default" Href="@(ReturnUrl ?? $"/books/{BookId}")">Cancel</MudButton>
+                <MudButton Color="Color.Primary" ButtonType="ButtonType.Submit" Variant="@Variant.Filled">Create
+                </MudButton>
+            </MudCardActions>
+        </MudCard>
+    </EditForm>
+}
+
+@code {
+    [SupplyParameterFromQuery] private Guid BookId { get; set; }
+    [SupplyParameterFromQuery] private string? ReturnUrl { get; set; }
+    [CascadingParameter] private ErrorHandler ErrorHandler { get; set; } = null!;
+
+    private bool _found;
+
+    private readonly CreateRecipeModel _model = new CreateRecipeModel();
+
+
+    protected override async Task OnParametersSetAsync()
+    {
+        await LoadBook();
+    }
+
+    private async Task LoadBook()
+    {
+        try
+        {
+            var book = await HttpClient.GetAsync($"/api/books/{BookId}");
+            if (book.StatusCode == HttpStatusCode.NotFound)
+            {
+                NavigationManager.NavigateTo("/books");
+                return;
+            }
+
+            _found = true;
+        }
+        catch (Exception e)
+        {
+            ErrorHandler.ProcessError(e);
+        }
+    }
+
+    private async Task Submit()
+    {
+        try
+        {
+            var request = new CreateRecipeCommand()
+            {
+                BookId = BookId,
+                Category = _model.Category,
+                Page = _model.Page,
+                Title = _model.Title
+            };
+
+            var r = await HttpClient.PostAsJsonAsync("/api/recipes", request);
+            r.EnsureSuccessStatusCode();
+            NavigationManager.NavigateTo($"/books/{BookId}");
+        }
+        catch (Exception e)
+        {
+            ErrorHandler.ProcessError(e);
+        }
+    }
+
+    private class CreateRecipeModel
+    {
+        [Required(AllowEmptyStrings = false)] public string? Title { get; set; }
+        public string? Category { get; set; }
+        [GreaterOrEqualThan(0)] public int? Page { get; set; }
+    }
+
+}

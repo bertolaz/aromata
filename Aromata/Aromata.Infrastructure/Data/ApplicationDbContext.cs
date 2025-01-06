@@ -1,6 +1,7 @@
 using Aromata.Application.Common.Interfaces;
 using Aromata.Domain.Books;
 using Aromata.Domain.Recipes;
+using Aromata.Infrastructure.Data.Configurations;
 using Aromata.Infrastructure.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
@@ -17,7 +18,7 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
     protected override void OnModelCreating(ModelBuilder builder)
     {
         base.OnModelCreating(builder);
-
+        builder.ConfigureAppCollations();
         builder.ApplyConfigurationsFromAssembly(typeof(ApplicationDbContext).Assembly);
     }
 }

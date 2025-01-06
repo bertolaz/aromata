@@ -1,0 +1,19 @@
+@page "/books/{BookId:guid}"
+<div class="pa-2">
+    <MudPaper Class="d-flex flex-wrap">
+        <MudIconButton Size="Size.Small" Icon="@Icons.Material.Filled.ArrowBack" Variant="Variant.Outlined" Color="Color.Primary" Href="@(ReturnUrl ?? "/books")" />
+        <BookInfo BookId="@BookId"/>
+    </MudPaper>
+    <MudDivider Class="my-2" />
+    <MudPaper Class="pa-2">
+        <RecipeList BookId="@BookId"/>
+    </MudPaper>
+</div>
+
+
+@code {
+    [Parameter] public Guid BookId { get; set; }
+    [SupplyParameterFromQuery] public string? ReturnUrl { get; set; }
+    
+
+}

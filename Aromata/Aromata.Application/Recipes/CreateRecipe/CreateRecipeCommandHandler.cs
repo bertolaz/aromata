@@ -23,7 +23,8 @@ public class CreateRecipeCommandHandler(IApplicationDbContext dbContext, IUser u
             Id = Guid.NewGuid(),
             BookId = bookId,
             Title = request.Title,
-            Category = request.Category
+            Category = request.Category,
+            Page = request.Page,
         };
         await dbContext.Recipes.AddAsync(recipe, cancellationToken);
         await dbContext.SaveChangesAsync(cancellationToken);

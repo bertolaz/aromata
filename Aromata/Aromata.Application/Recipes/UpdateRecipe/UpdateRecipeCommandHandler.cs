@@ -18,7 +18,7 @@ internal class UpdateRecipeCommandHandler(IApplicationDbContext dbContext, IUser
         recipe.Page = request.Page;
         recipe.Category = request.Category;
         recipe.Title = request.Title;
-
+await dbContext.SaveChangesAsync(cancellationToken);
         return recipe.ToDto();
     }
 }

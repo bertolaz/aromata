@@ -1,0 +1,121 @@
+@page "/recipes/{RecipeId:guid}"
+@using Aromata.Application.Recipes.GetRecipes
+@using Aromata.Application.Recipes.UpdateRecipe
+@inject HttpClient HttpClient
+@inject NavigationManager NavigationManager
+@if (_model is not null)
+{
+    <EditForm Model="@_model" OnValidSubmit="@Submit">
+        <DataAnnotationsValidator/>
+        <MudCard Class="relative">
+            <MudCardContent>
+                <CascadingValue Name="ParentReadOnly" Value="@(!IsEditing)">
+                    <MudTextField Label="Title" @bind-Value="_model.Title" For="() => _model.Title" Clearable="true"
+                                  AutoFocus="@(IsEditing)"/>
+                    @* <MudTextField Label="Category" @bind-Value="_model.Category" For="() => _model.Category" *@
+                    @*               Clearable="true"/> *@
+                    <MudNumericField Label="Page" T="int?" Min="0" @bind-Value="_model.Page" For="() => _model.Page"
+                                     Clearable="true"/>
+                </CascadingValue>
+            </MudCardContent>
+            <MudCardActions Class="d-flex gap-2 justify-end">
+                @if (!IsEditing)
+                {
+                    <MudButton Color="Color.Default" Href="@(ReturnUrl ?? $"/books/{_model.BookId}")">Back
+                    </MudButton>
+                    <MudButton Color="Color.Primary"
+                               Href="@NavigationManager.GetUriWithQueryParameter(nameof(Edit), true)"
+                               Variant="@Variant.Filled">Edit
+                    </MudButton>
+                }
+                else
+                {
+                    <MudButton Color="Color.Default"
+                               Href="@NavigationManager.GetUriWithQueryParameter(nameof(Edit), false)"
+                               Disabled="@_submitting">Cancel
+                    </MudButton>
+                    <MudButton Color="Color.Primary" Disabled="@_submitting" ButtonType="ButtonType.Submit"
+                               Variant="@Variant.Filled">Save
+                    </MudButton>
+                }
+
+            </MudCardActions>
+            <MudOverlay Absolute="true" Visible="@_submitting">
+                <MudProgressCircular Indeterminate="true" Color="@Color.Primary"/>
+            </MudOverlay>
+        </MudCard>
+    </EditForm>
+}
+
+@code {
+    [Parameter] public Guid RecipeId { get; set; }
+    [SupplyParameterFromQuery] private string? ReturnUrl { get; set; }
+    [SupplyParameterFromQuery] private bool? Edit { get; set; }
+    [CascadingParameter] private ErrorHandler ErrorHandler { get; set; } = null!;
+
+    private bool IsEditing => Edit is true;
+
+    private bool _submitting;
+    private RecipeEdit? _model;
+
+    protected override async Task OnParametersSetAsync()
+    {
+        _model = null;
+        await LoadRecipe();
+    }
+
+    private async Task LoadRecipe()
+    {
+        try
+        {
+            var recipe = (await HttpClient.GetFromJsonAsync<RecipeDto>($"/api/recipes/{RecipeId}"))!;
+            _model = new RecipeEdit()
+            {
+                Title = recipe.Title,
+                Category = recipe.Category,
+                Page = recipe.Page,
+                BookId = recipe.BookId
+            };
+        }
+        catch (Exception e)
+        {
+            ErrorHandler.ProcessError(e);
+        }
+    }
+
+    private async Task Submit()
+    {
+        if (!IsEditing) return;
+        if (_submitting) return;
+        _submitting = true;
+        try
+        {
+            var response = await HttpClient.PutAsJsonAsync($"/api/recipes/{RecipeId}", new UpdateRecipeCommand()
+            {
+                Title = _model!.Title,
+                Category = _model!.Category,
+                Page = _model!.Page,
+                RecipeId = RecipeId
+            });
+            response.EnsureSuccessStatusCode();
+            NavigationManager.NavigateTo(NavigationManager.GetUriWithQueryParameter(nameof(Edit), false));
+        }
+        catch (Exception e)
+        {
+            ErrorHandler.ProcessError(e);
+        }
+        finally
+        {
+            _submitting = false;
+        }
+    }
+
+    private class RecipeEdit
+    {
+        public string? Title { get; set; }
+        public string? Category { get; set; }
+        public int? Page { get; set; }
+        public Guid BookId { get; set; }
+    }
+
+}

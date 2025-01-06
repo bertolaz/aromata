@@ -1,4 +1,3 @@
-using Aromata.Domain.Books;
 using Aromata.Domain.Recipes;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
@@ -22,6 +21,5 @@ public class RecipeEntityTypeConfiguration : IEntityTypeConfiguration<Recipe>
             .HasMaxLength(150);
 
         builder.Property(x => x.BookId).IsRequired();
-        
     }
 }

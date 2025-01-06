@@ -9,6 +9,7 @@ public static class RecipeMappings
     {
         return new RecipeDto()
         {
+            Id = recipe.Id,
             Title = recipe.Title,
             Category = recipe.Category,
             BookId = recipe.BookId,

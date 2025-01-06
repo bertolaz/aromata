@@ -1,0 +1,122 @@
+@using Aromata.Application.Recipes.GetRecipes
+@using Aromata.Web.Client.Common
+@using Microsoft.AspNetCore.WebUtilities
+@inject HttpClient Httpclient
+@inject NavigationManager NavigationManager
+@if (_recipes is not null)
+{
+    <div class="d-flex flex-column gap-2">
+        <div class="d-flex justify-between gap-2">
+            <MudTextField Label="Search" @bind-Value="_search" @bind-Value:after="@OnSearch"/>
+            <MudFab StartIcon="@Icons.Material.Filled.Add" Class="align-self-end" Size="@Size.Small"
+                    Color="Color.Primary" Href="@GetAddRecipeUrl()"/>
+
+        </div>
+        <div class="relative d-flex flex-column gap-2">
+            <MudList T="string">
+                @foreach (var recipe in _recipes.Items)
+                {
+                    <RecipeListItem @key="recipe" Model="@recipe"/>
+                }
+            </MudList>
+            <div class="d-flex justify-center" style="width: 100%">
+                <MudPagination Selected="@_recipes.PageNumber" SelectedChanged="@ChangePage"
+                               Count="@_recipes.TotalPages"
+                               BoundaryCount="1" MiddleCount="2"/>
+            </div>
+            <MudOverlay Absolute="true" Visible="@_loading">
+                <MudProgressCircular Color="@Color.Primary" Indeterminate="true"/>
+            </MudOverlay>
+        </div>
+
+
+    </div>
+}
+
+
+@code {
+
+    [SupplyParameterFromQuery] private int? CurrentPage { get; set; }
+    [SupplyParameterFromQuery] private string? Search { get; set; }
+    private string? _search;
+    [Parameter] public Guid BookId { get; set; }
+    private Guid _bookId;
+
+    [CascadingParameter] private ErrorHandler ErrorHandler { get; set; } = null!;
+
+    private PaginatedResult<RecipeDto>? _recipes;
+
+    private bool _loading;
+
+    protected override async Task OnParametersSetAsync()
+    {
+        if (_bookId != BookId)
+        {
+            _bookId = BookId;
+            _recipes = null;
+        }
+
+        _search = Search;
+        await LoadRecipes();
+    }
+
+    private async Task LoadRecipes()
+    {
+        try
+        {
+            _loading = true;
+            var filter = FilterBuilder.Create()
+                .Like(
+                    property: nameof(RecipeDto.Title),
+                    value: _search,
+                    caseSensitive: false,
+                    when: () => !string.IsNullOrEmpty(_search))
+                .Eq(nameof(RecipeDto.BookId), BookId.ToString())
+                .Build();
+
+            var par = new Dictionary<string, string?>()
+            {
+                [nameof(GetRecipesQuery.Page)] = (CurrentPage ?? 1).ToString(),
+                [nameof(GetRecipesQuery.PageSize)] = 10.ToString(),
+                [nameof(GetRecipesQuery.Filter)] = filter,
+            };
+            var uri = QueryHelpers.AddQueryString("/api/recipes", par);
+            _recipes = await Httpclient.GetFromJsonAsync<PaginatedResult<RecipeDto>>(uri);
+        }
+        catch (Exception e)
+        {
+            ErrorHandler.ProcessError(e);
+        }
+        finally
+        {
+            _loading = false;
+        }
+    }
+
+    private void OnSearch()
+    {
+        if (_search == Search) return;
+        var uri = NavigationManager.GetUriWithQueryParameters(new Dictionary<string, object?>()
+        {
+            { nameof(Search), _search },
+            { nameof(CurrentPage), 1 }
+        });
+        NavigationManager.NavigateTo(uri);
+    }
+
+    private void ChangePage(int currentPage)
+    {
+        var uri = NavigationManager.GetUriWithQueryParameter(nameof(CurrentPage), currentPage);
+        NavigationManager.NavigateTo(uri);
+    }
+
+    private string GetAddRecipeUrl()
+    {
+        var uri = NavigationManager.ToBaseRelativePath(NavigationManager.Uri);
+        return NavigationManager.GetUriWithQueryParameters($"/recipes/create?BookId={BookId}", new Dictionary<string, object?>()
+        {
+            { "ReturnUrl", uri }
+        });
+    }
+
+}

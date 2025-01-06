@@ -1,0 +1,117 @@
+@page "/books"
+@using Aromata.Application.Books.GetBooks
+@using Aromata.Web.Client.Common
+@using Microsoft.AspNetCore.WebUtilities
+@inject NavigationManager NavigationManager
+@inject HttpClient HttpClient
+<MudContainer Fixed="true">
+    <MudText Typo="Typo.h1">Your books</MudText>
+    @if (_books is not null)
+    {
+        <div class="d-flex flex-column gap-4" style="width: 100%">
+            <div class="d-flex">
+                <MudTextField @bind-Value="_search" @bind-Value:after="SearchChanged" Label="Search" AutoFocus="true"/>
+                <MudFab Class="mt-2 align-self-center" Size="Size.Medium" Color="Color.Primary"
+                        StartIcon="@Icons.Material.Filled.Add" Href="/books/create"/>
+            </div>
+            <MudGrid Justify="@Justify.Center">
+                @foreach (var book in _books.Items)
+                {
+                    <MudItem @key="book.Id" xs="12" sm="6" md="3" lg="4">
+                        <MudCard Style="height: 100%; width: 100%">
+                            <MudCardHeader Class="d-flex flex-column">
+                                <MudText Typo="Typo.h6">@book.Title</MudText>
+                                <MudText Typo="Typo.body1">@book.Author</MudText>
+                            </MudCardHeader>
+                            <MudCardContent>
+
+                            </MudCardContent>
+                            <MudCardActions Class="d-flex justify-end">
+                                <MudButton Variant="Variant.Filled" Color="Color.Primary"
+                                           Href="@GetReturnUrl($"/books/{book.Id}")">
+                                    Go
+                                </MudButton>
+                            </MudCardActions>
+                        </MudCard>
+                    </MudItem>
+                }
+            </MudGrid>
+            <div class="d-flex justify-center" style="width: 100%">
+                <MudPagination Selected="@_books.PageNumber" SelectedChanged="@ChangePage" Count="@_books.TotalPages"
+                               BoundaryCount="1" MiddleCount="2"/>
+            </div>
+
+        </div>
+    }
+</MudContainer>
+
+
+@code {
+    [SupplyParameterFromQuery] private string? Search { get; set; }
+    private string? _search;
+    [SupplyParameterFromQuery] private int? Page { get; set; }
+    private int _page;
+
+    [CascadingParameter] private ErrorHandler ErrorHandler { get; set; } = null!;
+
+    private PaginatedResult<BookDto>? _books;
+
+    private void ChangePage(int page)
+    {
+        var uri = NavigationManager.GetUriWithQueryParameter(nameof(Page), page);
+        NavigationManager.NavigateTo(uri);
+    }
+
+    protected override async Task OnParametersSetAsync()
+    {
+        _page = Page is null or < 1 ? 1 : Page.Value;
+        _search = Search;
+        await LoadBooks();
+    }
+
+    private string? GetReturnUrl(string url)
+    {
+        var uri = NavigationManager.ToBaseRelativePath(NavigationManager.Uri);
+        return QueryHelpers.AddQueryString(url, new Dictionary<string, string?>()
+        {
+            { "ReturnUrl", uri }
+        });
+    }
+
+    private async Task LoadBooks()
+    {
+        var filter = FilterBuilder.Create()
+            .Like("Title", _search,
+                caseSensitive: false,
+                () => !string.IsNullOrEmpty(_search))
+            .Build();
+        try
+        {
+            var par = new Dictionary<string, string?>()
+            {
+                [nameof(GetBooksQuery.Page)] = _page.ToString(),
+                [nameof(GetBooksQuery.PageSize)] = 10.ToString(),
+                [nameof(GetBooksQuery.OrderBy)] = $"{nameof(BookDto.Title)} desc",
+                [nameof(GetBooksQuery.Filter)] = filter,
+            };
+            var uri = QueryHelpers.AddQueryString("/api/books", par);
+            _books = await HttpClient.GetFromJsonAsync<PaginatedResult<BookDto>>(uri);
+        }
+        catch (Exception e)
+        {
+            ErrorHandler.ProcessError(e);
+        }
+    }
+
+    private void SearchChanged()
+    {
+        var uri = NavigationManager.GetUriWithQueryParameters(new Dictionary<string, object?>()
+        {
+            [nameof(Page)] = 1,
+            [nameof(Search)] = _search
+        });
+        NavigationManager.NavigateTo(uri);
+    }
+
+
+}

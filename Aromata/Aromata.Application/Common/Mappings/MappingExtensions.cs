@@ -1,19 +1,18 @@
 using System.Linq.Expressions;
 using Aromata.Application.Common.Models;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Configuration;
 
 namespace Aromata.Application.Common.Mappings;
 
 public static class MappingExtensions
 {
     public static Task<PaginatedList<TDestination>> PaginatedListAsync<TDestination>(
-        this IQueryable<TDestination> queryable, int pageNumber, int pageSize) where TDestination : class
-        => PaginatedList<TDestination>.CreateAsync(queryable.AsNoTracking(), pageNumber, pageSize);
-    
+        this IQueryable<TDestination> queryable, int? pageNumber, int? pageSize) where TDestination : class
+        => PaginatedList<TDestination>.CreateAsync(queryable.AsNoTracking(), pageNumber ?? 1, pageSize ?? 10);
+
     public static Task<PaginatedList<TDestination>> PaginatedListAsync<TDestination>(
-        this IOrderedQueryable<TDestination> queryable, int pageNumber, int pageSize) where TDestination : class
-        => PaginatedList<TDestination>.CreateAsync(queryable.AsNoTracking(), pageNumber, pageSize);
+        this IOrderedQueryable<TDestination> queryable, int? pageNumber, int? pageSize) where TDestination : class
+        => PaginatedList<TDestination>.CreateAsync(queryable.AsNoTracking(), pageNumber ?? 1, pageSize ?? 10);
 
     // public static Task<List<TDestination>> ProjectToListAsync<TDestination>(this IQueryable queryable, IConfigurationProvider configuration) where TDestination : class
     //     => queryable.ProjectTo<TDestination>(configuration).AsNoTracking().ToListAsync();

@@ -2,11 +2,12 @@
 @inject HttpClient Httpclient
 @inject ISnackbar Snackbar
 @inject ILogger<BookInfo> Logger
-@if (BookDto is not null)
+@if (_bookDto is not null)
 {
-    <MudCard>
-        <MudCardHeader>
-            <MudText Typo="Typo.h6">@BookDto.Title</MudText>
+    <MudCard Elevation="0">
+        <MudCardHeader Class="d-flex flex-column align-items-start">
+            <MudText><strong>Title:</strong> @_bookDto.Title</MudText>
+            <MudText><strong>Author:</strong> @(_bookDto.Author ?? "-")</MudText>
         </MudCardHeader>
     </MudCard>
 }
@@ -35,7 +36,7 @@
 @code {
     [Parameter] public Guid BookId { get; set; }
 
-    private BookDto? BookDto;
+    private BookDto? _bookDto;
 
     private bool _showNotFound;
     private bool _showError;
@@ -52,12 +53,12 @@
         try
         {
             _loading = true;
-            BookDto = null;
+            _bookDto = null;
             _showNotFound = false;
             _showError = false;
             StateHasChanged();
-            BookDto = await Httpclient.GetFromJsonAsync<BookDto>($"/api/books/{BookId}");
-            if (BookDto is null)
+            _bookDto = await Httpclient.GetFromJsonAsync<BookDto>($"/api/books/{BookId}");
+            if (_bookDto is null)
             {
                 _showNotFound = true;
             }
