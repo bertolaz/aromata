@@ -18,21 +18,59 @@
 
   <meta charset="UTF-8">
   <meta content="IE=Edge" http-equiv="X-UA-Compatible">
-  <meta name="description" content="A new Flutter project.">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="description" content="Your personal recipe book organizer. Keep track of your favorite recipes from all your cookbooks.">
 
-  <!-- iOS meta tags & icons -->
+  <!-- PWA Meta Tags -->
+  <meta name="theme-color" content="#FFC107">
   <meta name="mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-status-bar-style" content="black">
-  <meta name="apple-mobile-web-app-title" content="aromata_frontend">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Aromata">
+  
+  <!-- iOS Icons -->
   <link rel="apple-touch-icon" href="icons/Icon-192.png">
+  <link rel="apple-touch-icon" sizes="192x192" href="icons/Icon-192.png">
+  <link rel="apple-touch-icon" sizes="512x512" href="icons/Icon-512.png">
 
   <!-- Favicon -->
   <link rel="icon" type="image/png" href="favicon.png"/>
 
-  <title>aromata_frontend</title>
+  <title>Aromata - Recipe Book Organizer</title>
   <link rel="manifest" href="manifest.json">
 </head>
 <body>
+  <script>
+    // Register service worker for PWA support
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', function() {
+        navigator.serviceWorker.register('/flutter_service_worker.js')
+          .then(function(registration) {
+            console.log('ServiceWorker registration successful');
+          })
+          .catch(function(error) {
+            console.log('ServiceWorker registration failed: ', error);
+          });
+      });
+    }
+
+    // Prompt user to install PWA
+    let deferredPrompt;
+    window.addEventListener('beforeinstallprompt', (e) => {
+      // Prevent the mini-infobar from appearing on mobile
+      e.preventDefault();
+      // Stash the event so it can be triggered later
+      deferredPrompt = e;
+      // Optionally, show a custom install button
+      console.log('PWA install prompt available');
+    });
+
+    // Handle PWA installation
+    window.addEventListener('appinstalled', () => {
+      console.log('PWA was installed');
+      deferredPrompt = null;
+    });
+  </script>
   <script src="flutter_bootstrap.js" async></script>
 </body>
 </html>

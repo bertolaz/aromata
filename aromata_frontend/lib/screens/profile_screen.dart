@@ -49,9 +49,13 @@ class ProfileScreen extends StatelessWidget {
                       ),
                       TextButton(
                         onPressed: () async {
-                          Navigator.of(context).pop();
+                          Navigator.of(context).pop(); // Close dialog
                           try {
                             await Supabase.instance.client.auth.signOut();
+                            // Pop all routes to get back to root
+                            if (context.mounted) {
+                              Navigator.of(context).popUntil((route) => route.isFirst);
+                            }
                             // Navigation will happen automatically via AuthWrapper
                           } catch (e) {
                             if (context.mounted) {
@@ -298,9 +302,13 @@ class ProfileScreen extends StatelessWidget {
                           ),
                           TextButton(
                             onPressed: () async {
-                              Navigator.of(context).pop();
+                              Navigator.of(context).pop(); // Close dialog
                               try {
                                 await Supabase.instance.client.auth.signOut();
+                                // Pop all routes to get back to root
+                                if (context.mounted) {
+                                  Navigator.of(context).popUntil((route) => route.isFirst);
+                                }
                                 // Navigation will happen automatically via AuthWrapper
                               } catch (e) {
                                 if (context.mounted) {

@@ -1,23 +1,27 @@
 {
-    "name": "aromata_frontend",
-    "short_name": "aromata_frontend",
-    "start_url": ".",
+    "name": "Aromata - Recipe Book Organizer",
+    "short_name": "Aromata",
+    "start_url": "/",
+    "scope": "/",
     "display": "standalone",
-    "background_color": "#0175C2",
-    "theme_color": "#0175C2",
-    "description": "A new Flutter project.",
-    "orientation": "portrait-primary",
+    "background_color": "#FFC107",
+    "theme_color": "#FFC107",
+    "description": "Your personal recipe book organizer. Keep track of your favorite recipes from all your cookbooks.",
+    "orientation": "any",
     "prefer_related_applications": false,
+    "categories": ["food", "lifestyle", "productivity"],
     "icons": [
         {
             "src": "icons/Icon-192.png",
             "sizes": "192x192",
-            "type": "image/png"
+            "type": "image/png",
+            "purpose": "any"
         },
         {
             "src": "icons/Icon-512.png",
             "sizes": "512x512",
-            "type": "image/png"
+            "type": "image/png",
+            "purpose": "any"
         },
         {
             "src": "icons/Icon-maskable-192.png",
@@ -31,5 +35,7 @@
             "type": "image/png",
             "purpose": "maskable"
         }
-    ]
+    ],
+    "screenshots": [],
+    "shortcuts": []
 }
