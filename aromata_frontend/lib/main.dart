@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'screens/auth_wrapper.dart';
@@ -10,7 +11,7 @@ void main() async {
   // For local development, use: http://127.0.0.1:54321
   // Get the anon key from Supabase Studio: http://127.0.0.1:54323
   try {
-    await dotenv.load(fileName: ".env");
+    await dotenv.load(fileName: kReleaseMode ? '.env' : '.env.development');
     final supabaseUrl = dotenv.get('SUPABASE_URL');
     final supabaseAnonKey = dotenv.get('SUPABASE_ANON_KEY');
     

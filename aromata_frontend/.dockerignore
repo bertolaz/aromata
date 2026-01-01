@@ -1,0 +1,46 @@
+# Flutter/Dart
+.dart_tool/
+.packages
+.pub-cache/
+.pub/
+build/
+.flutter-plugins
+.flutter-plugins-dependencies
+
+# IDE
+.idea/
+.vscode/
+*.iml
+*.ipr
+*.iws
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Git
+.git/
+.gitignore
+
+# Environment
+.env.development
+# Logs
+*.log
+
+# Misc
+*.swp
+*.swo
+*~
+
+# Test
+test/
+coverage/
+
+# Documentation
+*.md
+!README.md
+
+# Scripts (but allow entrypoint.sh for Docker)
+scripts/*
+!scripts/entrypoint.sh
+
