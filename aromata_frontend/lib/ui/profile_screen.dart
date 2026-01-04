@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:provider/provider.dart';
+import '../viewmodels/profile_viewmodel.dart';
+import '../repositories/auth_repository.dart';
 import 'privacy_security_screen.dart';
 
 class ProfileScreen extends StatelessWidget {
@@ -12,22 +14,17 @@ class ProfileScreen extends StatelessWidget {
     this.recipeCount = 0,
   });
 
-  String _getUserName() {
-    final user = Supabase.instance.client.auth.currentUser;
-    if (user == null) return 'User';
-    return user.userMetadata?['name'] as String? ?? 
-           user.email?.split('@').first ?? 
-           'User';
-  }
-
-  String _getUserEmail() {
-    final user = Supabase.instance.client.auth.currentUser;
-    return user?.email ?? 'user@example.com';
-  }
-
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
+    return ChangeNotifierProvider(
+      create: (context) => ProfileViewModel(
+        bookCount: bookCount,
+        recipeCount: recipeCount,
+        authRepository: Provider.of<IAuthRepository>(context, listen: false),
+      ),
+      child: Consumer<ProfileViewModel>(
+        builder: (context, viewModel, child) {
+          return Scaffold(
       appBar: AppBar(
         title: const Text('Profile'),
         backgroundColor: Theme.of(context).colorScheme.inversePrimary,
@@ -50,22 +47,16 @@ class ProfileScreen extends StatelessWidget {
                       TextButton(
                         onPressed: () async {
                           Navigator.of(context).pop(); // Close dialog
-                          try {
-                            await Supabase.instance.client.auth.signOut();
-                            // Pop all routes to get back to root
-                            if (context.mounted) {
-                              Navigator.of(context).popUntil((route) => route.isFirst);
-                            }
-                            // Navigation will happen automatically via AuthWrapper
-                          } catch (e) {
-                            if (context.mounted) {
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                SnackBar(
-                                  content: Text('Error logging out: $e'),
-                                  backgroundColor: Colors.red,
-                                ),
-                              );
-                            }
+                          final success = await viewModel.signOut();
+                          if (!success && context.mounted) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(
+                                content: Text(viewModel.errorMessage ?? 'Error signing out'),
+                                backgroundColor: Colors.red,
+                              ),
+                            );
+                          } else if (context.mounted) {
+                            Navigator.of(context).popUntil((route) => route.isFirst);
                           }
                         },
                         style: TextButton.styleFrom(
@@ -102,14 +93,14 @@ class ProfileScreen extends StatelessWidget {
                     ),
                     const SizedBox(height: 16),
                     Text(
-                      _getUserName(),
+                      viewModel.getUserName(),
                       style: Theme.of(context).textTheme.headlineSmall?.copyWith(
                             fontWeight: FontWeight.bold,
                           ),
                     ),
                     const SizedBox(height: 4),
                     Text(
-                      _getUserEmail(),
+                      viewModel.getUserEmail(),
                       style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                             color: Colors.grey[600],
                           ),
@@ -303,22 +294,16 @@ class ProfileScreen extends StatelessWidget {
                           TextButton(
                             onPressed: () async {
                               Navigator.of(context).pop(); // Close dialog
-                              try {
-                                await Supabase.instance.client.auth.signOut();
-                                // Pop all routes to get back to root
-                                if (context.mounted) {
-                                  Navigator.of(context).popUntil((route) => route.isFirst);
-                                }
-                                // Navigation will happen automatically via AuthWrapper
-                              } catch (e) {
-                                if (context.mounted) {
-                                  ScaffoldMessenger.of(context).showSnackBar(
-                                    SnackBar(
-                                      content: Text('Error signing out: $e'),
-                                      backgroundColor: Colors.red,
-                                    ),
-                                  );
-                                }
+                              final success = await viewModel.signOut();
+                              if (!success && context.mounted) {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(
+                                    content: Text(viewModel.errorMessage ?? 'Error signing out'),
+                                    backgroundColor: Colors.red,
+                                  ),
+                                );
+                              } else if (context.mounted) {
+                                Navigator.of(context).popUntil((route) => route.isFirst);
                               }
                             },
                             style: TextButton.styleFrom(
@@ -341,6 +326,9 @@ class ProfileScreen extends StatelessWidget {
             const SizedBox(height: 32),
           ],
         ),
+      ),
+    );
+        },
       ),
     );
   }

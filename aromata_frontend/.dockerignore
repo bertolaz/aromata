@@ -44,3 +44,4 @@ coverage/
 scripts/*
 !scripts/entrypoint.sh
 
+.env*

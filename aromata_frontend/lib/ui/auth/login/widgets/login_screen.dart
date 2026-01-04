@@ -1,67 +1,63 @@
+import 'package:aromata_frontend/routing/routes.dart';
 import 'package:flutter/material.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:go_router/go_router.dart';
+import 'package:provider/provider.dart';
+import '../view_models/login_viewmodel.dart';
 
-class AuthScreen extends StatefulWidget {
-  const AuthScreen({super.key});
+class LoginScreen extends StatefulWidget {
+  final LoginViewModel viewModel;
+  const LoginScreen({super.key, required this.viewModel});
 
   @override
-  State<AuthScreen> createState() => _AuthScreenState();
+  State<LoginScreen> createState() => _LoginScreenState();
 }
 
-class _AuthScreenState extends State<AuthScreen> {
+class _LoginScreenState extends State<LoginScreen> {
   final _formKey = GlobalKey<FormState>();
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
-  bool _isLoading = false;
+
+  @override
+  void initState() {
+    super.initState();
+    widget.viewModel.login.addListener(() {
+      _onResult();
+    });
+  }
+
+  @override
+  void didUpdateWidget(covariant LoginScreen oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    oldWidget.viewModel.login.removeListener(_onResult);
+    widget.viewModel.login.addListener(_onResult);
+  }
 
   @override
   void dispose() {
-    _emailController.dispose();
-    _passwordController.dispose();
+    widget.viewModel.login.removeListener(_onResult);
     super.dispose();
   }
 
-  Future<void> _handleSignIn() async {
-    if (!_formKey.currentState!.validate()) {
-      return;
+  void _onResult() {
+    if (widget.viewModel.login.completed) {
+      widget.viewModel.login.clearResult();
+      context.go(Routes.home);
     }
 
-    setState(() {
-      _isLoading = true;
-    });
-
-    try {
-      final supabase = Supabase.instance.client;
-
-      // Sign in only
-      await supabase.auth.signInWithPassword(
-        email: _emailController.text.trim(),
-        password: _passwordController.text.trim(),
+    if (widget.viewModel.login.error) {
+      widget.viewModel.login.clearResult();
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Error while logging in'),
+          action: SnackBarAction(
+            label: 'Try again',
+            onPressed: () => widget.viewModel.login.execute((
+              _emailController.text,
+              _passwordController.text,
+            )),
+          ),
+        ),
       );
-    } on AuthException catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(e.message),
-            backgroundColor: Colors.red,
-          ),
-        );
-      }
-    } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('An error occurred: $e'),
-            backgroundColor: Colors.red,
-          ),
-        );
-      }
-    } finally {
-      if (mounted) {
-        setState(() {
-          _isLoading = false;
-        });
-      }
     }
   }
 
@@ -88,17 +84,17 @@ class _AuthScreenState extends State<AuthScreen> {
                   Text(
                     'Aromata',
                     style: Theme.of(context).textTheme.headlineLarge?.copyWith(
-                          fontWeight: FontWeight.bold,
-                          color: Theme.of(context).colorScheme.primary,
-                        ),
+                      fontWeight: FontWeight.bold,
+                      color: Theme.of(context).colorScheme.primary,
+                    ),
                     textAlign: TextAlign.center,
                   ),
                   const SizedBox(height: 8),
                   Text(
                     'Sign in to access your recipe books',
-                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                          color: Colors.grey[600],
-                        ),
+                    style: Theme.of(
+                      context,
+                    ).textTheme.bodyMedium?.copyWith(color: Colors.grey[600]),
                     textAlign: TextAlign.center,
                   ),
                   const SizedBox(height: 48),
@@ -149,21 +145,32 @@ class _AuthScreenState extends State<AuthScreen> {
                   const SizedBox(height: 32),
 
                   // Submit button
-                  ElevatedButton(
-                    onPressed: _isLoading ? null : _handleSignIn,
-                    style: ElevatedButton.styleFrom(
-                      padding: const EdgeInsets.symmetric(vertical: 16),
-                    ),
-                    child: _isLoading
-                        ? const SizedBox(
-                            height: 20,
-                            width: 20,
-                            child: CircularProgressIndicator(strokeWidth: 2),
-                          )
-                        : const Text(
-                            'Sign In',
-                            style: TextStyle(fontSize: 16),
-                          ),
+                  Consumer<LoginViewModel>(
+                    builder: (context, authViewModel, child) {
+                      return ElevatedButton(
+                        onPressed: widget.viewModel.login.running
+                            ? null
+                            : () => widget.viewModel.login.execute((
+                              _emailController.text,
+                              _passwordController.text,
+                            )),
+                        style: ElevatedButton.styleFrom(
+                          padding: const EdgeInsets.symmetric(vertical: 16),
+                        ),
+                        child: widget.viewModel.login.running
+                            ? const SizedBox(
+                                height: 20,
+                                width: 20,
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 2,
+                                ),
+                              )
+                            : const Text(
+                                'Sign In',
+                                style: TextStyle(fontSize: 16),
+                              ),
+                      );
+                    },
                   ),
                 ],
               ),
@@ -174,4 +181,3 @@ class _AuthScreenState extends State<AuthScreen> {
     );
   }
 }
-

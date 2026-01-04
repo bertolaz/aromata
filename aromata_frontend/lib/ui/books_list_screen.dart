@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
-import '../models/book.dart';
-import '../models/recipe.dart';
-import '../screens/book_detail_screen.dart';
-import '../screens/create_book_screen.dart';
-import '../screens/profile_screen.dart';
+import '../domain/models/book.dart';
+import '../domain/models/recipe.dart';
+import 'book_detail_screen.dart';
+import 'create_book_screen.dart';
+import 'profile_screen.dart';
 
 class BooksListScreen extends StatefulWidget {
   final List<Book> books;

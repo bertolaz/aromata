@@ -1,17 +1,17 @@
-import 'package:flutter/foundation.dart';
+import 'package:aromata_frontend/routing/router.dart';
+import 'package:aromata_frontend/ui/core/theme/theme.dart';
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
-import 'screens/auth_wrapper.dart';
+import 'package:provider/provider.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'config/dependencies.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   
   // Initialize Supabase
-  // For local development, use: http://127.0.0.1:54321
-  // Get the anon key from Supabase Studio: http://127.0.0.1:54323
   try {
-    await dotenv.load(fileName: kReleaseMode ? '.env' : '.env.development');
+    await dotenv.load(fileName: '.env');
     final supabaseUrl = dotenv.get('SUPABASE_URL');
     final supabaseAnonKey = dotenv.get('SUPABASE_ANON_KEY');
     
@@ -36,17 +36,15 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'Aromata',
-      theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(
-          seedColor: const Color(0xFFFFC107), // Amber yellow
-          brightness: Brightness.light,
-        ),
-        useMaterial3: true,
+    return MultiProvider(
+      providers: createDependencies(),
+      child: MaterialApp.router(
+        title: 'Aromata',
+        theme: AppTheme.lightTheme,
+        darkTheme: AppTheme.darkTheme,
+        themeMode: ThemeMode.system,
+        routerConfig: router(context.read())
       ),
-      home: const AuthWrapper(),
-      debugShowCheckedModeBanner: false,
     );
   }
 }

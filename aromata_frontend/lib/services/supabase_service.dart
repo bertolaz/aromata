@@ -1,6 +1,6 @@
 import 'package:supabase_flutter/supabase_flutter.dart';
-import '../models/book.dart';
-import '../models/recipe.dart';
+import '../domain/models/book.dart';
+import '../domain/models/recipe.dart';
 
 class SupabaseService {
   final SupabaseClient _supabase = Supabase.instance.client;

@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
-import '../models/book.dart';
-import '../models/recipe.dart';
-import '../screens/create_recipe_screen.dart';
-import '../screens/bulk_import_screen.dart';
+import 'package:provider/provider.dart';
+import '../domain/models/book.dart';
+import '../domain/models/recipe.dart';
+import '../viewmodels/book_detail_viewmodel.dart';
+import 'create_recipe_screen.dart';
+import 'bulk_import_screen.dart';
 
 class BookDetailScreen extends StatefulWidget {
   final Book book;
@@ -27,22 +29,32 @@ class BookDetailScreen extends StatefulWidget {
 }
 
 class _BookDetailScreenState extends State<BookDetailScreen> {
-  late List<Recipe> _recipes;
+  late BookDetailViewModel _viewModel;
   
   @override
   void initState() {
     super.initState();
-    _recipes = List.from(widget.recipes);
-    _recipes.sort((a, b) => a.page.compareTo(b.page));
+    _viewModel = BookDetailViewModel(
+      book: widget.book,
+      recipes: widget.recipes,
+      onRecipeAdded: widget.onRecipeAdded,
+      onRecipeUpdated: widget.onRecipeUpdated,
+      onRecipeDeleted: widget.onRecipeDeleted,
+    );
   }
 
   @override
   void didUpdateWidget(BookDetailScreen oldWidget) {
     super.didUpdateWidget(oldWidget);
     if (oldWidget.recipes != widget.recipes) {
-      _recipes = List.from(widget.recipes);
-      _recipes.sort((a, b) => a.page.compareTo(b.page));
+      _viewModel.updateRecipes(widget.recipes);
     }
+  }
+
+  @override
+  void dispose() {
+    _viewModel.dispose();
+    super.dispose();
   }
 
   void _deleteBook() {
@@ -78,7 +90,11 @@ class _BookDetailScreenState extends State<BookDetailScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
+    return ChangeNotifierProvider.value(
+      value: _viewModel,
+      child: Consumer<BookDetailViewModel>(
+        builder: (context, viewModel, child) {
+          return Scaffold(
       appBar: AppBar(
         title: Text(widget.book.title),
         backgroundColor: Theme.of(context).colorScheme.inversePrimary,
@@ -131,55 +147,59 @@ class _BookDetailScreenState extends State<BookDetailScreen> {
                   ],
                 ),
                 const SizedBox(height: 8),
-                Text(
-                  '${_recipes.length} recipe${_recipes.length != 1 ? 's' : ''}',
-                  style: Theme.of(context)
-                      .textTheme
-                      .bodySmall
-                      ?.copyWith(
-                        color:
-                            Theme.of(context).colorScheme.onPrimaryContainer,
-                      ),
-                ),
+                        Consumer<BookDetailViewModel>(
+                          builder: (context, viewModel, child) {
+                            return Text(
+                              '${viewModel.recipeCount} recipe${viewModel.recipeCount != 1 ? 's' : ''}',
+                              style: Theme.of(context)
+                                  .textTheme
+                                  .bodySmall
+                                  ?.copyWith(
+                                    color:
+                                        Theme.of(context).colorScheme.onPrimaryContainer,
+                                  ),
+                            );
+                          },
+                        ),
               ],
             ),
           ),
-          // Recipes list
-          Expanded(
-            child: _recipes.isEmpty
-                ? Center(
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Icon(
-                          Icons.restaurant_menu,
-                          size: 64,
-                          color: Colors.grey[400],
-                        ),
-                        const SizedBox(height: 16),
-                        Text(
-                          'No recipes yet',
-                          style: TextStyle(
-                            fontSize: 18,
-                            color: Colors.grey[600],
-                          ),
-                        ),
-                        const SizedBox(height: 8),
-                        Text(
-                          'Tap the + button to add your first recipe',
-                          style: TextStyle(
-                            fontSize: 14,
-                            color: Colors.grey[500],
-                          ),
-                        ),
-                      ],
-                    ),
-                  )
-                : ListView.builder(
-                    itemCount: _recipes.length,
-                    padding: const EdgeInsets.all(8),
-                    itemBuilder: (context, index) {
-                      final recipe = _recipes[index];
+                  // Recipes list
+                  Expanded(
+                    child: viewModel.sortedRecipes.isEmpty
+                        ? Center(
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Icon(
+                                  Icons.restaurant_menu,
+                                  size: 64,
+                                  color: Colors.grey[400],
+                                ),
+                                const SizedBox(height: 16),
+                                Text(
+                                  'No recipes yet',
+                                  style: TextStyle(
+                                    fontSize: 18,
+                                    color: Colors.grey[600],
+                                  ),
+                                ),
+                                const SizedBox(height: 8),
+                                Text(
+                                  'Tap the + button to add your first recipe',
+                                  style: TextStyle(
+                                    fontSize: 14,
+                                    color: Colors.grey[500],
+                                  ),
+                                ),
+                              ],
+                            ),
+                          )
+                        : ListView.builder(
+                            itemCount: viewModel.sortedRecipes.length,
+                            padding: const EdgeInsets.all(8),
+                            itemBuilder: (context, index) {
+                              final recipe = viewModel.sortedRecipes[index];
                       return Card(
                         margin: const EdgeInsets.symmetric(
                           horizontal: 8,
@@ -231,20 +251,11 @@ class _BookDetailScreenState extends State<BookDetailScreen> {
                               ),
                             );
                             if (updatedRecipe != null) {
-                              widget.onRecipeUpdated(updatedRecipe);
-                              setState(() {
-                                final index = _recipes.indexWhere(
-                                  (r) => r.id == recipe.id,
-                                );
-                                if (index != -1) {
-                                  _recipes[index] = updatedRecipe;
-                                }
-                              });
+                              await widget.onRecipeUpdated(updatedRecipe);
+                              viewModel.updateRecipes(widget.recipes);
                             } else {
                               // Recipe might have been deleted, refresh the list
-                              setState(() {
-                                _recipes.removeWhere((r) => r.id == recipe.id);
-                              });
+                              viewModel.updateRecipes(widget.recipes);
                             }
                           },
                         ),
@@ -275,10 +286,7 @@ class _BookDetailScreenState extends State<BookDetailScreen> {
                 ),
               );
               if (importedRecipes != null && importedRecipes.isNotEmpty) {
-                setState(() {
-                  _recipes.addAll(importedRecipes);
-                  _recipes.sort((a, b) => a.page.compareTo(b.page));
-                });
+                viewModel.updateRecipes(widget.recipes);
               }
             },
             tooltip: 'Bulk Import',
@@ -297,17 +305,17 @@ class _BookDetailScreenState extends State<BookDetailScreen> {
                 ),
               );
               if (newRecipe != null) {
-                widget.onRecipeAdded(newRecipe);
-                setState(() {
-                  _recipes.add(newRecipe);
-                  _recipes.sort((a, b) => a.page.compareTo(b.page));
-                });
+                await widget.onRecipeAdded(newRecipe);
+                viewModel.updateRecipes(widget.recipes);
               }
             },
             tooltip: 'Add Recipe',
             child: const Icon(Icons.add),
           ),
         ],
+      ),
+    );
+        },
       ),
     );
   }
