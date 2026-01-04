@@ -2,7 +2,7 @@ import 'tag_repository.dart';
 import '../services/supabase_service.dart';
 
 /// Supabase implementation of ITagRepository
-class SupabaseTagRepository implements ITagRepository {
+class SupabaseTagRepository implements TagRepository {
   final SupabaseService _supabaseService;
 
   SupabaseTagRepository(this._supabaseService);

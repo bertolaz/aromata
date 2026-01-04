@@ -1,7 +1,6 @@
 import 'package:aromata_frontend/routing/routes.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import 'package:provider/provider.dart';
 import '../view_models/login_viewmodel.dart';
 
 class LoginScreen extends StatefulWidget {
@@ -145,8 +144,9 @@ class _LoginScreenState extends State<LoginScreen> {
                   const SizedBox(height: 32),
 
                   // Submit button
-                  Consumer<LoginViewModel>(
-                    builder: (context, authViewModel, child) {
+                  ListenableBuilder(
+                    listenable: widget.viewModel.login,
+                    builder: (context, child) {
                       return ElevatedButton(
                         onPressed: widget.viewModel.login.running
                             ? null

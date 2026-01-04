@@ -1,10 +1,9 @@
 import 'package:aromata_frontend/utils/result.dart';
-import 'package:flutter/foundation.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'auth_repository.dart';
 
 /// Supabase implementation of IAuthRepository
-class SupabaseAuthRepository extends ChangeNotifier implements IAuthRepository {
+class SupabaseAuthRepository extends AuthRepository {
   final SupabaseClient _supabase = Supabase.instance.client;
 
   @override

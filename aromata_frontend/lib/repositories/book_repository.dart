@@ -1,7 +1,7 @@
 import '../domain/models/book.dart';
 
 /// Repository interface for book operations
-abstract class IBookRepository {
+abstract class BookRepository {
   /// Get all books for the current user
   Future<List<Book>> getBooks();
 

@@ -37,13 +37,19 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MultiProvider(
-      providers: createDependencies(),
-      child: MaterialApp.router(
-        title: 'Aromata',
-        theme: AppTheme.lightTheme,
-        darkTheme: AppTheme.darkTheme,
-        themeMode: ThemeMode.system,
-        routerConfig: router(context.read())
+      providers: createDependencies,
+      child: Builder(
+        builder: (context) {
+          return MaterialApp.router(
+            title: 'Aromata',
+            theme: AppTheme.lightTheme,
+            darkTheme: AppTheme.darkTheme,
+            themeMode: ThemeMode.system,
+            routerConfig: router(
+              context.read(),
+            ),
+          );
+        },
       ),
     );
   }

@@ -2,7 +2,7 @@ import 'package:aromata_frontend/utils/result.dart';
 import 'package:flutter/foundation.dart';
 
 /// Repository interface for authentication operations
-abstract class IAuthRepository extends Listenable {
+abstract class AuthRepository extends ChangeNotifier {
   /// Get the current authenticated user
   String? getCurrentUserId();
 

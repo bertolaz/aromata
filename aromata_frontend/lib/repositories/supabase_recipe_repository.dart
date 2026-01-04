@@ -3,7 +3,7 @@ import 'recipe_repository.dart';
 import '../services/supabase_service.dart';
 
 /// Supabase implementation of IRecipeRepository
-class SupabaseRecipeRepository implements IRecipeRepository {
+class SupabaseRecipeRepository implements RecipeRepository {
   final SupabaseService _supabaseService;
 
   SupabaseRecipeRepository(this._supabaseService);

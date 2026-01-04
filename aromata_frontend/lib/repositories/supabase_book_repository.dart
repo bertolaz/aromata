@@ -3,7 +3,7 @@ import 'book_repository.dart';
 import '../services/supabase_service.dart';
 
 /// Supabase implementation of IBookRepository
-class SupabaseBookRepository implements IBookRepository {
+class SupabaseBookRepository implements BookRepository {
   final SupabaseService _supabaseService;
 
   SupabaseBookRepository(this._supabaseService);

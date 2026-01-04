@@ -1,7 +1,7 @@
 import '../domain/models/recipe.dart';
 
 /// Repository interface for recipe operations
-abstract class IRecipeRepository {
+abstract class RecipeRepository {
   /// Get all recipes for the current user
   Future<List<Recipe>> getAllRecipes();
 

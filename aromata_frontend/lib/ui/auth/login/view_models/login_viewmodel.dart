@@ -2,14 +2,12 @@ import 'package:aromata_frontend/utils/command.dart';
 import 'package:aromata_frontend/utils/result.dart';
 
 import '../../../../repositories/auth_repository.dart';
-import '../../../../viewmodels/base_viewmodel.dart';
-
-class LoginViewModel extends BaseViewModel {
-  final IAuthRepository _authRepository;
+class LoginViewModel {
+  final AuthRepository _authRepository;
   late Command1 login;
 
 
-  LoginViewModel({required IAuthRepository authRepository})
+  LoginViewModel({required AuthRepository authRepository})
       : _authRepository = authRepository {
     login = Command1<void, (String email, String password)>(_login);
   }

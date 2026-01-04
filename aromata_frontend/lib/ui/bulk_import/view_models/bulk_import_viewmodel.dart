@@ -1,24 +1,37 @@
 import 'dart:convert';
 import 'dart:typed_data';
+import 'package:aromata_frontend/utils/command.dart';
+import 'package:aromata_frontend/utils/result.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:image/image.dart' as img;
-import '../domain/models/recipe.dart';
-import 'base_viewmodel.dart';
+import '../../../domain/models/recipe.dart';
+import '../../../viewmodels/base_viewmodel.dart';
+import '../../../repositories/recipe_repository.dart';
 
 class BulkImportViewModel extends BaseViewModel {
   final String bookId;
-  final Function(List<Recipe>) onRecipesImported;
+  final RecipeRepository _recipeRepository;
 
   final ImagePicker _picker = ImagePicker();
   Uint8List? _selectedImage;
   List<Recipe> _extractedRecipes = [];
   Set<int> _selectedRecipeIndices = {};
 
+  late final Command0<void> pickImageFromCamera;
+  late final Command0<void> pickImageFromGallery;
+  late final Command0<void> processImage;
+  late final Command0<void> importSelectedRecipes;
+
   BulkImportViewModel({
     required this.bookId,
-    required this.onRecipesImported,
-  });
+    required RecipeRepository recipeRepository,
+  }) : _recipeRepository = recipeRepository {
+    pickImageFromCamera = Command0<void>(_pickImageFromCamera);
+    pickImageFromGallery = Command0<void>(_pickImageFromGallery);
+    processImage = Command0<void>(_processImage);
+    importSelectedRecipes = Command0<void>(_importSelectedRecipes);
+  }
 
   Uint8List? get selectedImage => _selectedImage;
   List<Recipe> get extractedRecipes => _extractedRecipes;
@@ -26,9 +39,8 @@ class BulkImportViewModel extends BaseViewModel {
   Set<int> get selectedRecipeIndices => _selectedRecipeIndices;
   bool get hasSelectedRecipes => _selectedRecipeIndices.isNotEmpty;
 
-  /// Pick image from camera
-  Future<void> pickImageFromCamera() async {
-    await execute(() async {
+  Future<Result<void>> _pickImageFromCamera() async {
+    try {
       final image = await _picker.pickImage(
         source: ImageSource.camera,
         imageQuality: 85,
@@ -40,13 +52,16 @@ class BulkImportViewModel extends BaseViewModel {
         _extractedRecipes = [];
         _selectedRecipeIndices.clear();
         notifyListeners();
+        return Result.ok(null);
       }
-    });
+      return Result.error(Exception('No image selected'));
+    } catch (e) {
+      return Result.error(Exception('Failed to pick image: $e'));
+    }
   }
 
-  /// Pick image from gallery
-  Future<void> pickImageFromGallery() async {
-    await execute(() async {
+  Future<Result<void>> _pickImageFromGallery() async {
+    try {
       final image = await _picker.pickImage(
         source: ImageSource.gallery,
         imageQuality: 85,
@@ -58,26 +73,16 @@ class BulkImportViewModel extends BaseViewModel {
         _extractedRecipes = [];
         _selectedRecipeIndices.clear();
         notifyListeners();
+        return Result.ok(null);
       }
-    });
+      return Result.error(Exception('No image selected'));
+    } catch (e) {
+      return Result.error(Exception('Failed to pick image: $e'));
+    }
   }
 
-  /// Convert HEIC/HEIF images to JPG format
   Future<Uint8List> _convertToJpgIfNeeded(Uint8List bytes, String fileName) async {
     try {
-      final isHeic = fileName.toLowerCase().endsWith('.heic') ||
-          fileName.toLowerCase().endsWith('.heif') ||
-          _isHeicFormat(bytes);
-
-      if (!isHeic) {
-        final decodedImage = img.decodeImage(bytes);
-        if (decodedImage != null) {
-          final jpgBytes = img.encodeJpg(decodedImage, quality: 85);
-          return Uint8List.fromList(jpgBytes);
-        }
-        return bytes;
-      }
-
       final decodedImage = img.decodeImage(bytes);
       if (decodedImage == null) {
         return bytes;
@@ -90,22 +95,6 @@ class BulkImportViewModel extends BaseViewModel {
     }
   }
 
-  /// Check if bytes represent a HEIC/HEIF image
-  bool _isHeicFormat(Uint8List bytes) {
-    if (bytes.length < 12) return false;
-    try {
-      final signature = String.fromCharCodes(bytes.sublist(4, 8));
-      if (signature == 'ftyp') {
-        final brand = String.fromCharCodes(bytes.sublist(8, 12));
-        return brand == 'heic' || brand == 'mif1' || brand == 'msf1';
-      }
-    } catch (e) {
-      return false;
-    }
-    return false;
-  }
-
-  /// Clear selected image
   void clearImage() {
     _selectedImage = null;
     _extractedRecipes = [];
@@ -113,17 +102,15 @@ class BulkImportViewModel extends BaseViewModel {
     notifyListeners();
   }
 
-  /// Process image with AI
-  Future<void> processImage() async {
-    if (_selectedImage == null) return;
+  Future<Result<void>> _processImage() async {
+    if (_selectedImage == null) {
+      return Result.error(Exception('No image selected'));
+    }
 
-    await execute(() async {
+    try {
       final supabase = Supabase.instance.client;
-
-      // Convert Uint8List to base64
       final imageBase64 = base64Encode(_selectedImage!);
 
-      // Call the edge function
       final response = await supabase.functions.invoke(
         'extract-recipes',
         body: {
@@ -133,17 +120,16 @@ class BulkImportViewModel extends BaseViewModel {
       );
 
       if (response.data == null) {
-        throw Exception('No data returned from API');
+        return Result.error(Exception('No data returned from API'));
       }
 
       final data = response.data as Map<String, dynamic>;
       final recipesData = data['recipes'] as List<dynamic>?;
 
       if (recipesData == null || recipesData.isEmpty) {
-        throw Exception('No recipes found in the image');
+        return Result.error(Exception('No recipes found in the image'));
       }
 
-      // Convert to Recipe objects
       _extractedRecipes = recipesData.asMap().entries.map((entry) {
         final item = entry.value as Map<String, dynamic>;
         return Recipe(
@@ -155,13 +141,14 @@ class BulkImportViewModel extends BaseViewModel {
         );
       }).toList();
 
-      // Select all recipes by default
       _selectedRecipeIndices = Set.from(Iterable.generate(_extractedRecipes.length));
       notifyListeners();
-    });
+      return Result.ok(null);
+    } catch (e) {
+      return Result.error(Exception('Failed to process image: $e'));
+    }
   }
 
-  /// Toggle recipe selection
   void toggleRecipeSelection(int index) {
     if (_selectedRecipeIndices.contains(index)) {
       _selectedRecipeIndices.remove(index);
@@ -171,29 +158,43 @@ class BulkImportViewModel extends BaseViewModel {
     notifyListeners();
   }
 
-  /// Select all recipes
   void selectAllRecipes() {
     _selectedRecipeIndices = Set.from(Iterable.generate(_extractedRecipes.length));
     notifyListeners();
   }
 
-  /// Deselect all recipes
   void deselectAllRecipes() {
     _selectedRecipeIndices.clear();
     notifyListeners();
   }
 
-  /// Import selected recipes
-  void importSelectedRecipes() {
+  Future<Result<void>> _importSelectedRecipes() async {
     if (_selectedRecipeIndices.isEmpty) {
-      throw Exception('Please select at least one recipe to import');
+      return Result.error(Exception('Please select at least one recipe to import'));
     }
 
-    final selectedRecipes = _selectedRecipeIndices
-        .map((index) => _extractedRecipes[index])
-        .toList();
+    try {
+      final selectedRecipes = _selectedRecipeIndices
+          .map((index) => _extractedRecipes[index])
+          .toList();
 
-    onRecipesImported(selectedRecipes);
+      for (final recipe in selectedRecipes) {
+        try {
+          await _recipeRepository.createRecipe(
+            recipe.bookId,
+            recipe.title,
+            recipe.page,
+            recipe.tags,
+          );
+        } catch (e) {
+          return Result.error(Exception('Failed to import recipe: ${recipe.title}'));
+        }
+      }
+
+      return Result.ok(null);
+    } catch (e) {
+      return Result.error(Exception('Failed to import recipes: $e'));
+    }
   }
 }
 

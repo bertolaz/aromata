@@ -1,5 +1,5 @@
 /// Repository interface for tag operations
-abstract class ITagRepository {
+abstract class TagRepository {
   /// Get all tags for a recipe
   Future<List<String>> getRecipeTags(String recipeId);
 

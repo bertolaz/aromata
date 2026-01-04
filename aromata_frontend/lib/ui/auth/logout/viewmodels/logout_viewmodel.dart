@@ -4,12 +4,12 @@ import 'package:aromata_frontend/utils/result.dart';
 
 class LogoutViewModel{
   LogoutViewModel({
-    required IAuthRepository authRepository,
+    required AuthRepository authRepository,
   }): _authRepository = authRepository {
     logout = Command0(_logout);
   }
 
-  final IAuthRepository _authRepository;
+  final AuthRepository _authRepository;
   late Command0 logout;
 
   Future<Result> _logout() async {
