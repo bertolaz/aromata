@@ -49,7 +49,7 @@ class _CreateBookScreenState extends State<CreateBookScreen> {
         final book = result.value;
         if (book != null) {
           context.pop();
-          context.push('${Routes.home}/book/${book.id}', extra: book);
+          context.push(Routes.bookWithId(book.id!), extra: book);
         }
         break;
       case Error():

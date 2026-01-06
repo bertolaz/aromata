@@ -82,10 +82,7 @@ class BooksListScreen extends StatelessWidget {
                           subtitle: Text('By ${book.author}'),
                           trailing: const Icon(Icons.chevron_right),
                           onTap: () {
-                            context.push(
-                              '${Routes.home}/books/${book.id}',
-                              extra: book,
-                            );
+                            context.push(Routes.bookWithId(book.id!));
                           },
                         ),
                       );

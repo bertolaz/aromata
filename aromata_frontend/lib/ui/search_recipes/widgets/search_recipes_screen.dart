@@ -155,7 +155,7 @@ class _SearchRecipesScreenState extends State<SearchRecipesScreen> {
                                 trailing: const Icon(Icons.chevron_right),
                                 onTap: () {
                                   context.push(
-                                    '${Routes.home}/recipe/${recipe.id}?bookId=${recipe.bookId}',
+                                    Routes.recipeWithId(recipe.id!),
                                   );
                                 },
                               ),
