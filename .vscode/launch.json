@@ -5,11 +5,13 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "name": "Flutter: Run on Device",
+            "name": "Flutter: Run",
             "type": "dart",
             "request": "launch",
             "cwd": "aromata_frontend",
-            "flutterMode": "debug"
+            "flutterMode": "debug",
+            "deviceId": "chrome",
+        
         }
     ]
 }

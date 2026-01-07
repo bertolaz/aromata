@@ -4,10 +4,8 @@
 mkdir -p /usr/share/nginx/html/assets
 
 # Replace placeholders in assets/.env with runtime environment variables
-cat <<EOF > /usr/share/nginx/html/assets/.env
-SUPABASE_URL=${SUPABASE_URL:-}
-SUPABASE_ANON_KEY=${SUPABASE_ANON_KEY:-}
-EOF
+echo SUPABASE_URL=${SUPABASE_URL:-} > /usr/share/nginx/html/assets/.env
+echo SUPABASE_ANON_KEY=${SUPABASE_ANON_KEY:-} >> /usr/share/nginx/html/assets/.env
 
 # Start nginx
 exec nginx -g 'daemon off;'
