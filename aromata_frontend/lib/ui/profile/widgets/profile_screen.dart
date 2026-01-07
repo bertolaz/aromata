@@ -60,8 +60,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Consumer<ProfileViewModel>(
-      builder: (context, viewModel, child) {
+    return ChangeNotifierProvider.value(
+      value: widget.viewModel,
+      child: Consumer<ProfileViewModel>(
+        builder: (context, viewModel, child) {
         return Scaffold(
           appBar: AppBar(
             title: const Text('Profile'),
@@ -177,7 +179,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
           ),
         );
       },
-    );
+    ));
   }
 }
 

@@ -43,22 +43,17 @@ class SupabaseAuthRepository extends AuthRepository {
     } catch (e) {
       return Result.error(Exception(e.toString()));
     }
-    finally{
-      notifyListeners();
-    }
   }
 
   @override
   Future<Result<void>> signOut() async {
     try{
-      await _supabase.auth.signOut();
-      return Result.ok(null);
+          await _supabase.auth.signOut();
+          return Result.ok(null);
     } catch (e) {
       return Result.error(Exception(e.toString()));
     }
-    finally{
-      notifyListeners();
-    }
+    
   }
 
   @override
@@ -70,9 +65,6 @@ class SupabaseAuthRepository extends AuthRepository {
       return Result.ok(null);
     } catch (e) {
       return Result.error(Exception(e.toString()));
-    }
-    finally{
-      notifyListeners();
     }
   }
 

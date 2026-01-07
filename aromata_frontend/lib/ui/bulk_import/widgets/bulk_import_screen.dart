@@ -325,7 +325,7 @@ class _BulkImportScreenState extends State<BulkImportScreen> {
                     return Card(
                       margin: const EdgeInsets.only(bottom: 8),
                       color: isSelected
-                          ? Theme.of(context).colorScheme.primaryContainer.withOpacity(0.3)
+                          ? Theme.of(context).colorScheme.primaryContainer.withValues(alpha: 0.3)
                           : null,
                       child: CheckboxListTile(
                         value: isSelected,
@@ -363,7 +363,7 @@ class _BulkImportScreenState extends State<BulkImportScreen> {
                         ),
                       ),
                     );
-                  }).toList(),
+                  }),
                 ],
               ],
             ),

@@ -1,14 +1,14 @@
+import 'package:aromata_frontend/services/authState.dart';
 import 'package:aromata_frontend/utils/command.dart';
 import 'package:aromata_frontend/utils/result.dart';
 
-import '../../../../repositories/auth_repository.dart';
 class LoginViewModel {
-  final AuthRepository _authRepository;
+  final AuthState _authState;
   late Command1 login;
 
 
-  LoginViewModel({required AuthRepository authRepository})
-      : _authRepository = authRepository {
+  LoginViewModel({required AuthState authState})
+      : _authState = authState {
     login = Command1<void, (String email, String password)>(_login);
   }
 
@@ -16,7 +16,7 @@ class LoginViewModel {
   /// Sign in with email and password
   Future<Result<void>> _login((String, String) credentials) async {
     final (email, password) = credentials;
-    var response = await _authRepository.signIn(email, password);
+    var response = await _authState.signIn(email, password);
     switch (response) {
       case Ok():
         return Result.ok(null);

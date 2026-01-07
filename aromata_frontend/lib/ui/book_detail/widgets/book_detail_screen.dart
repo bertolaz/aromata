@@ -72,17 +72,16 @@ class _BookDetailScreenState extends State<BookDetailScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final book = widget.viewModel.book;
-    if (book == null) {
-      return const Scaffold(
-        body: Center(child: CircularProgressIndicator()),
-      );
-    }
-
     return ListenableBuilder(
       listenable: widget.viewModel,
       builder: (context, child) {
         final viewModel = widget.viewModel;
+        final book = viewModel.book;
+        if (book == null) {
+          return const Scaffold(
+            body: Center(child: CircularProgressIndicator()),
+          );
+        }
         return Scaffold(
           appBar: AppBar(
             title: Text(book.title),

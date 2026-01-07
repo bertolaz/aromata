@@ -1,4 +1,5 @@
 import 'package:aromata_frontend/repositories/auth_repository.dart';
+import 'package:aromata_frontend/services/authState.dart';
 import 'package:provider/provider.dart';
 import '../repositories/book_repository.dart';
 import '../repositories/recipe_repository.dart';
@@ -13,15 +14,23 @@ import 'package:provider/single_child_widget.dart';
 /// Creates and returns all dependency injection providers
 /// This includes services and repositories
 List<SingleChildWidget> get createDependencies {
-
   return [
-    // Services
-    Provider<SupabaseService>(create: (context) => SupabaseService()),
+        Provider<SupabaseService>(create: (context) => SupabaseService()),
     // Repositories
-    Provider<BookRepository>(create: (context) => SupabaseBookRepository(context.read())),
-    Provider<RecipeRepository>(create: (context) => SupabaseRecipeRepository(context.read())),
-    Provider<TagRepository>(create: (context) => SupabaseTagRepository(context.read())),
-    ChangeNotifierProvider<AuthRepository>(create: (context) => SupabaseAuthRepository()),
+    Provider<BookRepository>(
+      create: (context) => SupabaseBookRepository(context.read()),
+    ),
+    Provider<RecipeRepository>(
+      create: (context) => SupabaseRecipeRepository(context.read()),
+    ),
+    Provider<TagRepository>(
+      create: (context) => SupabaseTagRepository(context.read()),
+    ),
+    Provider<AuthRepository>(create: (context) => SupabaseAuthRepository()),
+
+    // Services
+    ChangeNotifierProvider<AuthState>(
+      create: (context) => AuthState(authRepository: context.read()),
+    ),
   ];
 }
-

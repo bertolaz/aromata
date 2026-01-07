@@ -9,7 +9,8 @@
             "type": "dart",
             "request": "launch",
             "cwd": "aromata_frontend",
-            "flutterMode": "debug"
+            "flutterMode": "debug",
+            "deviceId": "chrome",
         
         }
     ]

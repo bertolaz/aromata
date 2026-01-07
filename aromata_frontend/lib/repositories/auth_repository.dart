@@ -1,8 +1,7 @@
 import 'package:aromata_frontend/utils/result.dart';
-import 'package:flutter/foundation.dart';
 
 /// Repository interface for authentication operations
-abstract class AuthRepository extends ChangeNotifier {
+abstract class AuthRepository {
   /// Get the current authenticated user
   String? getCurrentUserId();
 

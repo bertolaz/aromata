@@ -2,16 +2,12 @@ import 'package:aromata_frontend/routing/routes.dart';
 import 'package:aromata_frontend/utils/result.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import 'package:provider/provider.dart';
 import '../view_models/create_book_viewmodel.dart';
 
 class CreateBookScreen extends StatefulWidget {
   final CreateBookViewModel viewModel;
 
-  const CreateBookScreen({
-    super.key,
-    required this.viewModel,
-  });
+  const CreateBookScreen({super.key, required this.viewModel});
 
   @override
   State<CreateBookScreen> createState() => _CreateBookScreenState();
@@ -72,8 +68,9 @@ class _CreateBookScreenState extends State<CreateBookScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Consumer<CreateBookViewModel>(
-      builder: (context, viewModel, child) {
+    return ListenableBuilder(
+      listenable: widget.viewModel,
+      builder: (context, child) {
         return Scaffold(
           appBar: AppBar(
             title: const Text('New Recipe Book'),
@@ -85,8 +82,8 @@ class _CreateBookScreenState extends State<CreateBookScreen> {
               padding: const EdgeInsets.all(16),
               children: [
                 TextFormField(
-                  onChanged: (value) => viewModel.setTitle(value),
-                  initialValue: viewModel.title,
+                  onChanged: (value) => widget.viewModel.setTitle(value),
+                  initialValue: widget.viewModel.title,
                   decoration: const InputDecoration(
                     labelText: 'Title',
                     hintText: 'Enter book title',
@@ -103,8 +100,8 @@ class _CreateBookScreenState extends State<CreateBookScreen> {
                 ),
                 const SizedBox(height: 16),
                 TextFormField(
-                  onChanged: (value) => viewModel.setAuthor(value),
-                  initialValue: viewModel.author,
+                  onChanged: (value) => widget.viewModel.setAuthor(value),
+                  initialValue: widget.viewModel.author,
                   decoration: const InputDecoration(
                     labelText: 'Author',
                     hintText: 'Enter author name',
@@ -121,13 +118,15 @@ class _CreateBookScreenState extends State<CreateBookScreen> {
                 ),
                 const SizedBox(height: 32),
                 ElevatedButton(
-                  onPressed: viewModel.isValid && !viewModel.createBook.running
+                  onPressed:
+                      widget.viewModel.isValid &&
+                          !widget.viewModel.createBook.running
                       ? _saveBook
                       : null,
                   style: ElevatedButton.styleFrom(
                     padding: const EdgeInsets.symmetric(vertical: 16),
                   ),
-                  child: viewModel.createBook.running
+                  child: widget.viewModel.createBook.running
                       ? const SizedBox(
                           height: 20,
                           width: 20,
@@ -146,4 +145,3 @@ class _CreateBookScreenState extends State<CreateBookScreen> {
     );
   }
 }
-

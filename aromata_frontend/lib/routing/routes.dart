@@ -1,7 +1,7 @@
 abstract final class Routes {
   static const String login = '/login';
   static const String books = '/$booksRelative';
-  static const String booksRelative = 'books';
+  static const String booksRelative = '';
   static  String bookWithId(String bookId) => '$books/$bookId';
   static const String createBook = '$books/create';
   static const String search = '/$searchRelative';

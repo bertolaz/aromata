@@ -1,10 +1,11 @@
+import 'package:flutter/material.dart';
+
 import '../../../domain/models/book.dart';
-import '../../../viewmodels/base_viewmodel.dart';
 import '../../../repositories/book_repository.dart';
 import 'package:aromata_frontend/utils/command.dart';
 import 'package:aromata_frontend/utils/result.dart';
 
-class CreateBookViewModel extends BaseViewModel {
+class CreateBookViewModel extends ChangeNotifier {
   final BookRepository _bookRepository;
 
   String _title = '';
@@ -55,7 +56,6 @@ class CreateBookViewModel extends BaseViewModel {
   void reset() {
     _title = '';
     _author = '';
-    clearError();
     notifyListeners();
   }
 }
