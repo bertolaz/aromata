@@ -6,6 +6,8 @@ import 'package:aromata_frontend/ui/book_detail/view_models/book_detail_viewmode
 import 'package:aromata_frontend/ui/book_detail/widgets/book_detail_screen.dart';
 import 'package:aromata_frontend/ui/books_list/view_models/books_list_viewmodel.dart';
 import 'package:aromata_frontend/ui/books_list/widgets/books_list_screen.dart';
+import 'package:aromata_frontend/ui/bulk_import/view_models/bulk_import_viewmodel.dart';
+import 'package:aromata_frontend/ui/bulk_import/widgets/bulk_import_screen.dart';
 import 'package:aromata_frontend/ui/create_book/view_models/create_book_viewmodel.dart';
 import 'package:aromata_frontend/ui/create_book/widgets/create_book_screen.dart';
 import 'package:aromata_frontend/ui/create_recipe/view_models/create_recipe_viewmodel.dart';
@@ -113,6 +115,18 @@ GoRouter router(AuthState authState) {
                         builder: (context, state) {
                           final bookId = state.pathParameters['bookId']!;
                           return _createRecipeScreen(context, bookId, null);
+                        },
+                      ),
+                      GoRoute(
+                        path: 'bulk-import',
+                        name: RouteNames.bulkImport,
+                        builder: (context, state) {
+                          final bookId = state.pathParameters['bookId']!;
+                          final viewModel = BulkImportViewModel(
+                            bookId: bookId,
+                            recipeRepository: context.read(),
+                          );
+                          return BulkImportScreen(viewModel: viewModel);
                         },
                       ),
                     ],
