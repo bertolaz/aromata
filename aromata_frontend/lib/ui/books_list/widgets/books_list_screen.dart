@@ -52,8 +52,10 @@ class BooksListScreen extends StatelessWidget {
                         horizontal: 8,
                         vertical: 4,
                       ),
+                      color: Theme.of(context).colorScheme.surface,
+            
                       child: ListTile(
-                        leading: const Icon(Icons.menu_book),
+                        leading: Icon(Icons.menu_book, color: Theme.of(context).colorScheme.primary),
                         title: Text(
                           book.title,
                           style: const TextStyle(fontWeight: FontWeight.bold),

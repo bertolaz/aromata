@@ -7,15 +7,18 @@ class PageScaffold extends StatelessWidget {
   final Widget child;
   final bool hideProfileButton;
   final Widget? floatingActionButton;
-  const PageScaffold({super.key, required this.title, required this.child, this.hideProfileButton = false, this.floatingActionButton = null});
+  const PageScaffold({
+    super.key,
+    required this.title,
+    required this.child,
+    this.hideProfileButton = false,
+    this.floatingActionButton,
+  });
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: Text(title),
-          actions: _buildActions(context),
-      ),
+      appBar: AppBar(title: Text(title), actions: _buildActions(context)),
       body: child,
       floatingActionButton: floatingActionButton,
     );
@@ -25,12 +28,14 @@ class PageScaffold extends StatelessWidget {
     if (hideProfileButton) {
       return null;
     }
-    return [IconButton(
-      icon: const Icon(Icons.account_circle),
-      tooltip: 'Profile',
-      onPressed: () {
-        context.pushNamed(RouteNames.profile);
-      },
-    )];
+    return [
+      IconButton(
+        icon: const Icon(Icons.account_circle),
+        tooltip: 'Profile',
+        onPressed: () {
+          context.pushNamed(RouteNames.profile);
+        },
+      ),
+    ];
   }
 }

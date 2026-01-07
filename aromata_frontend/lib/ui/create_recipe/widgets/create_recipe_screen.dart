@@ -131,7 +131,7 @@ class _CreateRecipeScreenState extends State<CreateRecipeScreen> {
         return PageScaffold(
           title: viewModel.initialRecipeId == null ? 'New Recipe' : 'Edit Recipe',
           hideProfileButton: true,
-          floatingActionButton: FloatingActionButton(
+          floatingActionButton: viewModel.initialRecipeId == null ? null: FloatingActionButton(
             onPressed: _deleteRecipe,
             tooltip: 'Delete Recipe',
             child: const Icon(Icons.delete),
@@ -208,10 +208,7 @@ class _CreateRecipeScreenState extends State<CreateRecipeScreen> {
                     const SizedBox(width: 8),
                     IconButton(
                       onPressed: () => viewModel.addTag(),
-                      icon: const Icon(Icons.add_circle),
-                      style: IconButton.styleFrom(
-                        backgroundColor: Theme.of(context).colorScheme.primaryContainer,
-                      ),
+                      icon: const Icon(Icons.add_circle)
                     ),
                   ],
                 ),
@@ -235,7 +232,10 @@ class _CreateRecipeScreenState extends State<CreateRecipeScreen> {
                       : null,
                   style: ElevatedButton.styleFrom(
                     padding: const EdgeInsets.symmetric(vertical: 16),
+                    backgroundColor: viewModel.isValid && !viewModel.saveRecipe.running ? Theme.of(context).colorScheme.primary : Theme.of(context).colorScheme.surface,
+                    foregroundColor: viewModel.isValid && !viewModel.saveRecipe.running ? Theme.of(context).colorScheme.onPrimary : Theme.of(context).colorScheme.onSurface,
                   ),
+                  
                   child: viewModel.saveRecipe.running
                       ? const SizedBox(
                           height: 20,

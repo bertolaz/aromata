@@ -134,13 +134,15 @@ GoRouter router(AuthState authState) {
                   viewModel.loadData.execute();
                   return SearchRecipesScreen(viewModel: viewModel);
                 },
-              ),
-              GoRoute(
-                path: 'search?bookId=:bookId&recipeId=:recipeId',
-                name: RouteNames.searchRecipeDetail,
-                builder: (context, state) {
-                  return _createRecipeScreen(context, state.uri.queryParameters['bookId']!, state.uri.queryParameters['recipeId']!);
-                },
+                routes: [
+                  GoRoute(
+                    path: 'recipe',
+                    name: RouteNames.searchRecipeDetail,
+                    builder: (context, state) {
+                      return _createRecipeScreen(context, state.uri.queryParameters['bookId']!, state.uri.queryParameters['recipeId']!);
+                    },
+                  ),
+                ],
               ),
             ],
           ),

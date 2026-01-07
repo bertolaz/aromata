@@ -44,6 +44,7 @@ class _PrivacySecurityScreenState extends State<PrivacySecurityScreen> {
     switch (result) {
       case Ok():
         widget.viewModel.changePassword.clearResult();
+        widget.viewModel.reset();
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
             content: Text('Password changed successfully'),

@@ -1,10 +1,10 @@
 import 'package:aromata_frontend/utils/command.dart';
 import 'package:aromata_frontend/utils/result.dart';
+import 'package:flutter/material.dart';
 import '../../../domain/models/recipe.dart';
-import '../../../viewmodels/base_viewmodel.dart';
 import '../../../repositories/recipe_repository.dart';
 
-class CreateRecipeViewModel extends BaseViewModel {
+class CreateRecipeViewModel extends ChangeNotifier {
   final RecipeRepository _recipeRepository;
 
   String _title = '';
@@ -29,20 +29,18 @@ class CreateRecipeViewModel extends BaseViewModel {
     _bookId = bookId;
     _initialRecipeId = initialRecipeId;
     loadInitialRecipe = Command0<void>(_loadInitialRecipe);
+    loadInitialRecipe.addListener(notifyListeners);
+    saveRecipe.addListener(notifyListeners);
+    deleteRecipe.addListener(notifyListeners);
   }
 
   Future<Result<void>> _loadInitialRecipe() async {
     try {
-      if (_initialRecipeId == null) {
-        return Result.ok(null);
-      }
-      final recipe = await _recipeRepository.getRecipeById(_initialRecipeId!);
+      final recipe = _initialRecipeId == null ? null : await _recipeRepository.getRecipeById(_initialRecipeId!);
       _setInitialRecipe(recipe);
       return Result.ok(null);
     } catch (e) {
       return Result.error(Exception('Failed to load initial recipe: $e'));
-    } finally {
-      notifyListeners();
     }
   }
 
@@ -163,7 +161,13 @@ class CreateRecipeViewModel extends BaseViewModel {
     _page = '';
     _tags = [];
     _tagInput = '';
-    clearError();
-    notifyListeners();
+  }
+
+  @override
+  void dispose() {
+    loadInitialRecipe.removeListener(notifyListeners);
+    saveRecipe.removeListener(notifyListeners);
+    deleteRecipe.removeListener(notifyListeners);
+    super.dispose();
   }
 }

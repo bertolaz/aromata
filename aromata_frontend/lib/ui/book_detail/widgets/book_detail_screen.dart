@@ -85,7 +85,6 @@ class _BookDetailScreenState extends State<BookDetailScreen> {
         return Scaffold(
           appBar: AppBar(
             title: Text(book.title),
-            backgroundColor: Theme.of(context).colorScheme.inversePrimary,
             actions: [
               IconButton(
                 icon: const Icon(Icons.delete),
