@@ -82,7 +82,7 @@ class BooksListScreen extends StatelessWidget {
                           subtitle: Text('By ${book.author}'),
                           trailing: const Icon(Icons.chevron_right),
                           onTap: () {
-                            context.push(Routes.bookWithId(book.id!));
+                            context.pushNamed('book-detail', pathParameters: {'bookId': book.id!});
                           },
                         ),
                       );
@@ -90,7 +90,7 @@ class BooksListScreen extends StatelessWidget {
                   ),
             floatingActionButton: FloatingActionButton(
               onPressed: () {
-                context.push(Routes.createBook);
+                context.pushNamed('create-book');
               },
               tooltip: 'Add Recipe Book',
               child: const Icon(Icons.add),
