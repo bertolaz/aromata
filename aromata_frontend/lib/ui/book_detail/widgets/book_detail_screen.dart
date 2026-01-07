@@ -222,8 +222,9 @@ class _BookDetailScreenState extends State<BookDetailScreen> {
                                     ),
                               trailing: const Icon(Icons.chevron_right),
                               onTap: () {
-                                context.push(
-                                  Routes.recipeWithId(recipe.id!),
+                                context.pushNamed(
+                                  RouteNames.recipeDetail,
+                                  pathParameters: {'bookId': book.id!, 'recipeId': recipe.id!},
                                 );
                               },
                             ),
@@ -240,8 +241,9 @@ class _BookDetailScreenState extends State<BookDetailScreen> {
               FloatingActionButton(
                 heroTag: 'camera',
                 onPressed: () {
-                  context.push(
-                    Routes.bulkImport(book.id!),
+                  context.pushNamed(
+                    RouteNames.bulkImport,
+                    pathParameters: {'bookId': book.id!},
                   );
                 },
                 tooltip: 'Bulk Import',
@@ -251,8 +253,9 @@ class _BookDetailScreenState extends State<BookDetailScreen> {
               FloatingActionButton(
                 heroTag: 'add',
                 onPressed: () {
-                  context.push(
-                    Routes.createRecipe(book.id!),
+                  context.pushNamed(
+                    RouteNames.createRecipe,
+                    pathParameters: {'bookId': book.id!},
                   );
                 },
                 tooltip: 'Add Recipe',

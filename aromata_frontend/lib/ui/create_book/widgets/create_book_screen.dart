@@ -1,4 +1,5 @@
 import 'package:aromata_frontend/routing/routes.dart';
+import 'package:aromata_frontend/ui/core/page_scaffold.dart';
 import 'package:aromata_frontend/utils/result.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
@@ -45,7 +46,7 @@ class _CreateBookScreenState extends State<CreateBookScreen> {
         final book = result.value;
         if (book != null) {
           context.pop();
-          context.push(Routes.bookWithId(book.id!), extra: book);
+          context.pushNamed(RouteNames.bookDetail, pathParameters: {'bookId': book.id!});
         }
         break;
       case Error():
@@ -71,12 +72,10 @@ class _CreateBookScreenState extends State<CreateBookScreen> {
     return ListenableBuilder(
       listenable: widget.viewModel,
       builder: (context, child) {
-        return Scaffold(
-          appBar: AppBar(
-            title: const Text('New Recipe Book'),
-            backgroundColor: Theme.of(context).colorScheme.inversePrimary,
-          ),
-          body: Form(
+        return PageScaffold(
+          title: 'New Recipe Book',
+          hideProfileButton: true,
+          child: Form(
             key: _formKey,
             child: ListView(
               padding: const EdgeInsets.all(16),

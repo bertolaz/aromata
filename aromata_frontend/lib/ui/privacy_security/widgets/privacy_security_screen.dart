@@ -1,5 +1,5 @@
+import 'package:aromata_frontend/ui/core/page_scaffold.dart';
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
 import 'package:aromata_frontend/utils/result.dart';
 import '../view_models/privacy_security_viewmodel.dart';
 
@@ -75,12 +75,10 @@ class _PrivacySecurityScreenState extends State<PrivacySecurityScreen> {
       listenable: widget.viewModel,
       builder: (context, child) {
         final viewModel = widget.viewModel;
-        return Scaffold(
-          appBar: AppBar(
-            title: const Text('Privacy & Security'),
-            backgroundColor: Theme.of(context).colorScheme.inversePrimary,
-          ),
-          body: Form(
+        return PageScaffold(
+          title: 'Privacy & Security',
+          hideProfileButton: true,
+          child: Form(
             key: _formKey,
             child: ListView(
               padding: const EdgeInsets.all(16),

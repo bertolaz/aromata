@@ -17,30 +17,39 @@ class CreateRecipeViewModel extends BaseViewModel {
 
   late final Command0<Recipe?> saveRecipe;
   late final Command0<void> deleteRecipe;
+  late final Command0<void> loadInitialRecipe;
 
   CreateRecipeViewModel({
     required RecipeRepository recipeRepository,
-     String? bookId,
+    String? bookId,
+    String? initialRecipeId,
   }) : _recipeRepository = recipeRepository {
     saveRecipe = Command0<Recipe?>(_saveRecipe);
     deleteRecipe = Command0<void>(_deleteRecipe);
     _bookId = bookId;
+    _initialRecipeId = initialRecipeId;
+    loadInitialRecipe = Command0<void>(_loadInitialRecipe);
   }
 
-  void loadInitialRecipe(String recipeId) async {
-    final recipe = await _recipeRepository.getRecipeById(recipeId);
-    if (recipe != null) {
+  Future<Result<void>> _loadInitialRecipe() async {
+    try {
+      if (_initialRecipeId == null) {
+        return Result.ok(null);
+      }
+      final recipe = await _recipeRepository.getRecipeById(_initialRecipeId!);
       _setInitialRecipe(recipe);
+      return Result.ok(null);
+    } catch (e) {
+      return Result.error(Exception('Failed to load initial recipe: $e'));
+    } finally {
+      notifyListeners();
     }
   }
 
-  void _setInitialRecipe(Recipe recipe) {
-    _initialRecipeId = recipe.id;
-    _bookId = recipe.bookId;
-    _title = recipe.title;
-    _page = recipe.page.toString();
-    _tags = List<String>.from(recipe.tags);
-    notifyListeners();
+  void _setInitialRecipe(Recipe? recipe) {
+    _title = recipe?.title ?? '';
+    _page = recipe?.page.toString() ?? '';
+    _tags = List<String>.from(recipe?.tags ?? []);
   }
 
   String get title => _title;
@@ -50,9 +59,7 @@ class CreateRecipeViewModel extends BaseViewModel {
 
   bool get isValid {
     final pageNum = int.tryParse(_page.trim());
-    return _title.trim().isNotEmpty && 
-           pageNum != null && 
-           pageNum > 0;
+    return _title.trim().isNotEmpty && pageNum != null && pageNum > 0;
   }
 
   void setTitle(String value) {
@@ -93,7 +100,9 @@ class CreateRecipeViewModel extends BaseViewModel {
 
   Future<Result<Recipe?>> _saveRecipe() async {
     if (!isValid) {
-      return Result.error(Exception('Please enter a valid title and page number'));
+      return Result.error(
+        Exception('Please enter a valid title and page number'),
+      );
     }
 
     final pageNum = int.tryParse(_page.trim());
@@ -136,7 +145,9 @@ class CreateRecipeViewModel extends BaseViewModel {
 
   Future<Result<void>> _deleteRecipe() async {
     if (_initialRecipeId == null) {
-      return Result.error(Exception('Cannot delete a recipe that has not been saved'));
+      return Result.error(
+        Exception('Cannot delete a recipe that has not been saved'),
+      );
     }
 
     try {
@@ -156,4 +167,3 @@ class CreateRecipeViewModel extends BaseViewModel {
     notifyListeners();
   }
 }
-

@@ -1,17 +1,13 @@
-import 'package:aromata_frontend/routing/routes.dart';
+import 'package:aromata_frontend/ui/core/page_scaffold.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import 'package:provider/provider.dart';
 import 'package:aromata_frontend/utils/result.dart';
 import '../view_models/profile_viewmodel.dart';
 
 class ProfileScreen extends StatefulWidget {
   final ProfileViewModel viewModel;
 
-  const ProfileScreen({
-    super.key,
-    required this.viewModel,
-  });
+  const ProfileScreen({super.key, required this.viewModel});
 
   @override
   State<ProfileScreen> createState() => _ProfileScreenState();
@@ -60,16 +56,14 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return ChangeNotifierProvider.value(
-      value: widget.viewModel,
-      child: Consumer<ProfileViewModel>(
-        builder: (context, viewModel, child) {
-        return Scaffold(
-          appBar: AppBar(
-            title: const Text('Profile'),
-            backgroundColor: Theme.of(context).colorScheme.inversePrimary,
-          ),
-          body: ListView(
+    return ListenableBuilder(
+      listenable: widget.viewModel,
+      builder: (context, child) {
+        final viewModel = widget.viewModel;
+        return PageScaffold(
+          title: 'Profile',
+          hideProfileButton: true,
+          child: ListView(
             padding: const EdgeInsets.all(16),
             children: [
               // User info card
@@ -180,7 +174,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
           ),
         );
       },
-    ));
+    );
   }
 }
 
@@ -203,16 +197,12 @@ class _StatItem extends StatelessWidget {
         const SizedBox(height: 8),
         Text(
           value,
-          style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                fontWeight: FontWeight.bold,
-              ),
+          style: Theme.of(
+            context,
+          ).textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.bold),
         ),
-        Text(
-          label,
-          style: Theme.of(context).textTheme.bodySmall,
-        ),
+        Text(label, style: Theme.of(context).textTheme.bodySmall),
       ],
     );
   }
 }
-

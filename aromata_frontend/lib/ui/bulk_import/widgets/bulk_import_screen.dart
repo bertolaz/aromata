@@ -1,15 +1,12 @@
+import 'package:aromata_frontend/ui/core/page_scaffold.dart';
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
 import 'package:aromata_frontend/utils/result.dart';
 import '../view_models/bulk_import_viewmodel.dart';
 
 class BulkImportScreen extends StatefulWidget {
   final BulkImportViewModel viewModel;
 
-  const BulkImportScreen({
-    super.key,
-    required this.viewModel,
-  });
+  const BulkImportScreen({super.key, required this.viewModel});
 
   @override
   State<BulkImportScreen> createState() => _BulkImportScreenState();
@@ -94,14 +91,14 @@ class _BulkImportScreenState extends State<BulkImportScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Consumer<BulkImportViewModel>(
-      builder: (context, viewModel, child) {
-        return Scaffold(
-          appBar: AppBar(
-            title: const Text('Bulk Import Recipes'),
-            backgroundColor: Theme.of(context).colorScheme.inversePrimary,
-          ),
-          body: SingleChildScrollView(
+    return ListenableBuilder(
+      listenable: widget.viewModel,
+      builder: (context, child) {
+        final viewModel = widget.viewModel;
+        return PageScaffold(
+          title: 'Bulk Import Recipes',
+          hideProfileButton: true,
+          child: SingleChildScrollView(
             padding: const EdgeInsets.all(16),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -122,9 +119,8 @@ class _BulkImportScreenState extends State<BulkImportScreen> {
                             const SizedBox(width: 8),
                             Text(
                               'How it works',
-                              style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                                    fontWeight: FontWeight.bold,
-                                  ),
+                              style: Theme.of(context).textTheme.titleMedium
+                                  ?.copyWith(fontWeight: FontWeight.bold),
                             ),
                           ],
                         ),
@@ -153,7 +149,9 @@ class _BulkImportScreenState extends State<BulkImportScreen> {
                               ? const SizedBox(
                                   width: 20,
                                   height: 20,
-                                  child: CircularProgressIndicator(strokeWidth: 2),
+                                  child: CircularProgressIndicator(
+                                    strokeWidth: 2,
+                                  ),
                                 )
                               : const Icon(Icons.camera_alt),
                           label: const Text('Take Photo'),
@@ -172,7 +170,9 @@ class _BulkImportScreenState extends State<BulkImportScreen> {
                               ? const SizedBox(
                                   width: 20,
                                   height: 20,
-                                  child: CircularProgressIndicator(strokeWidth: 2),
+                                  child: CircularProgressIndicator(
+                                    strokeWidth: 2,
+                                  ),
                                 )
                               : const Icon(Icons.photo_library),
                           label: const Text('From Gallery'),
@@ -224,7 +224,11 @@ class _BulkImportScreenState extends State<BulkImportScreen> {
                             child: CircularProgressIndicator(strokeWidth: 2),
                           )
                         : const Icon(Icons.auto_awesome),
-                    label: Text(viewModel.processImage.running ? 'Processing...' : 'Process with AI'),
+                    label: Text(
+                      viewModel.processImage.running
+                          ? 'Processing...'
+                          : 'Process with AI',
+                    ),
                     style: ElevatedButton.styleFrom(
                       padding: const EdgeInsets.symmetric(vertical: 16),
                     ),
@@ -265,22 +269,25 @@ class _BulkImportScreenState extends State<BulkImportScreen> {
                         children: [
                           Text(
                             'Extracted Recipes (${viewModel.extractedRecipes.length})',
-                            style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                                  fontWeight: FontWeight.bold,
-                                ),
+                            style: Theme.of(context).textTheme.titleLarge
+                                ?.copyWith(fontWeight: FontWeight.bold),
                           ),
                           if (viewModel.hasSelectedRecipes)
                             Text(
                               '${viewModel.selectedRecipeIndices.length} selected',
-                              style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                                    color: Theme.of(context).colorScheme.primary,
+                              style: Theme.of(context).textTheme.bodySmall
+                                  ?.copyWith(
+                                    color: Theme.of(
+                                      context,
+                                    ).colorScheme.primary,
                                   ),
                             ),
                         ],
                       ),
                       Row(
                         children: [
-                          if (viewModel.selectedRecipeIndices.length < viewModel.extractedRecipes.length)
+                          if (viewModel.selectedRecipeIndices.length <
+                              viewModel.extractedRecipes.length)
                             TextButton.icon(
                               onPressed: () => viewModel.selectAllRecipes(),
                               icon: const Icon(Icons.select_all, size: 18),
@@ -296,14 +303,19 @@ class _BulkImportScreenState extends State<BulkImportScreen> {
                             const SizedBox(width: 8),
                           ],
                           ElevatedButton.icon(
-                            onPressed: viewModel.hasSelectedRecipes && !viewModel.importSelectedRecipes.running
-                                ? () => viewModel.importSelectedRecipes.execute()
+                            onPressed:
+                                viewModel.hasSelectedRecipes &&
+                                    !viewModel.importSelectedRecipes.running
+                                ? () =>
+                                      viewModel.importSelectedRecipes.execute()
                                 : null,
                             icon: viewModel.importSelectedRecipes.running
                                 ? const SizedBox(
                                     width: 20,
                                     height: 20,
-                                    child: CircularProgressIndicator(strokeWidth: 2),
+                                    child: CircularProgressIndicator(
+                                      strokeWidth: 2,
+                                    ),
                                   )
                                 : const Icon(Icons.check),
                             label: Text(
@@ -320,16 +332,20 @@ class _BulkImportScreenState extends State<BulkImportScreen> {
                   ...viewModel.extractedRecipes.asMap().entries.map((entry) {
                     final index = entry.key;
                     final recipe = entry.value;
-                    final isSelected = viewModel.selectedRecipeIndices.contains(index);
+                    final isSelected = viewModel.selectedRecipeIndices.contains(
+                      index,
+                    );
 
                     return Card(
                       margin: const EdgeInsets.only(bottom: 8),
                       color: isSelected
-                          ? Theme.of(context).colorScheme.primaryContainer.withValues(alpha: 0.3)
+                          ? Theme.of(context).colorScheme.primaryContainer
+                                .withValues(alpha: 0.3)
                           : null,
                       child: CheckboxListTile(
                         value: isSelected,
-                        onChanged: (value) => viewModel.toggleRecipeSelection(index),
+                        onChanged: (value) =>
+                            viewModel.toggleRecipeSelection(index),
                         secondary: CircleAvatar(
                           child: Text(
                             recipe.page.toString(),
@@ -348,16 +364,18 @@ class _BulkImportScreenState extends State<BulkImportScreen> {
                               Wrap(
                                 spacing: 4,
                                 runSpacing: 4,
-                                children: recipe.tags.map(
-                                  (tag) => Chip(
-                                    label: Text(
-                                      tag,
-                                      style: const TextStyle(fontSize: 11),
-                                    ),
-                                    padding: EdgeInsets.zero,
-                                    visualDensity: VisualDensity.compact,
-                                  ),
-                                ).toList(),
+                                children: recipe.tags
+                                    .map(
+                                      (tag) => Chip(
+                                        label: Text(
+                                          tag,
+                                          style: const TextStyle(fontSize: 11),
+                                        ),
+                                        padding: EdgeInsets.zero,
+                                        visualDensity: VisualDensity.compact,
+                                      ),
+                                    )
+                                    .toList(),
                               ),
                           ],
                         ),
@@ -373,4 +391,3 @@ class _BulkImportScreenState extends State<BulkImportScreen> {
     );
   }
 }
-

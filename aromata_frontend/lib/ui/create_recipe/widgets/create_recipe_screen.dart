@@ -1,3 +1,4 @@
+import 'package:aromata_frontend/ui/core/page_scaffold.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:aromata_frontend/utils/result.dart';
@@ -127,21 +128,15 @@ class _CreateRecipeScreenState extends State<CreateRecipeScreen> {
       listenable: widget.viewModel,
       builder: (context, child) {
         final viewModel = widget.viewModel;
-        return Scaffold(
-          appBar: AppBar(
-            title: Text(viewModel.initialRecipeId == null ? 'New Recipe' : 'Edit Recipe'),
-            backgroundColor: Theme.of(context).colorScheme.inversePrimary,
-            actions: [
-              if (viewModel.initialRecipeId != null)
-                IconButton(
-                  icon: const Icon(Icons.delete),
-                  tooltip: 'Delete Recipe',
-                  onPressed: _deleteRecipe,
-                  color: Theme.of(context).colorScheme.error,
-                ),
-            ],
+        return PageScaffold(
+          title: viewModel.initialRecipeId == null ? 'New Recipe' : 'Edit Recipe',
+          hideProfileButton: true,
+          floatingActionButton: FloatingActionButton(
+            onPressed: _deleteRecipe,
+            tooltip: 'Delete Recipe',
+            child: const Icon(Icons.delete),
           ),
-          body: Form(
+          child: viewModel.loadInitialRecipe.running ? const Center(child: CircularProgressIndicator()) : Form(
             key: _formKey,
             child: ListView(
               padding: const EdgeInsets.all(16),

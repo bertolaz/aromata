@@ -99,15 +99,20 @@ GoRouter router(AuthState authState) {
                     },
                     routes: [
                       GoRoute(
-                        path: 'recipes/create',
+                        path: 'recipes/:recipeId',
+                        name: RouteNames.recipeDetail,
+                        builder: (context, state) {
+                          final bookId = state.pathParameters['bookId']!;
+                          final recipeId = state.pathParameters.containsKey('recipeId') ? state.pathParameters['recipeId'] : null;
+                          return _createRecipeScreen(context, bookId, recipeId);
+                        },
+                      ),
+                      GoRoute(
+                        path: 'recipes',
                         name: RouteNames.createRecipe,
                         builder: (context, state) {
-                          final bookId = state.uri.queryParameters['bookId']!;
-                          var viewModel = CreateRecipeViewModel(
-                            recipeRepository: context.read(),
-                            bookId: bookId,
-                          );
-                          return CreateRecipeScreen(viewModel: viewModel);
+                          final bookId = state.pathParameters['bookId']!;
+                          return _createRecipeScreen(context, bookId, null);
                         },
                       ),
                     ],
@@ -131,16 +136,10 @@ GoRouter router(AuthState authState) {
                 },
               ),
               GoRoute(
-                path: '/recipes/:recipeId',
-                name: RouteNames.recipes,
+                path: 'search?bookId=:bookId&recipeId=:recipeId',
+                name: RouteNames.searchRecipeDetail,
                 builder: (context, state) {
-                  var viewModel = CreateRecipeViewModel(
-                    recipeRepository: context.read(),
-                  );
-                  viewModel.loadInitialRecipe(
-                    state.pathParameters['recipeId']!,
-                  );
-                  return CreateRecipeScreen(viewModel: viewModel);
+                  return _createRecipeScreen(context, state.uri.queryParameters['bookId']!, state.uri.queryParameters['recipeId']!);
                 },
               ),
             ],
@@ -176,7 +175,7 @@ Future<String?> _redirect(
   AuthState authState,
 ) async {
   final location = state.uri.path;
-  final isLoginRoute = location == Routes.login;
+  final isLoginRoute = location == "/login";
   final loggedIn = await authState.isAuthenticated();
 
   // If not logged in and trying to access a protected route, redirect to login
@@ -191,4 +190,15 @@ Future<String?> _redirect(
 
   // Allow all other routes (including nested routes) to pass through
   return null;
+}
+
+
+Widget _createRecipeScreen(BuildContext context, String bookId, String? recipeId) {
+  var viewModel = CreateRecipeViewModel(
+    recipeRepository: context.read(),
+    bookId: bookId,
+    initialRecipeId: recipeId,
+  );
+  viewModel.loadInitialRecipe.execute();
+  return CreateRecipeScreen(viewModel: viewModel);
 }

@@ -1,4 +1,5 @@
 import 'package:aromata_frontend/routing/routes.dart';
+import 'package:aromata_frontend/ui/core/page_scaffold.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import '../view_models/search_recipes_viewmodel.dart';
@@ -38,21 +39,10 @@ class _SearchRecipesScreenState extends State<SearchRecipesScreen> {
     return ListenableBuilder(
       listenable: widget.viewModel,
       builder: (context, child) {
-        return Scaffold(
-          appBar: AppBar(
-            title: const Text('Search Recipes'),
-            backgroundColor: Theme.of(context).colorScheme.inversePrimary,
-            actions: [
-              IconButton(
-                icon: const Icon(Icons.account_circle),
-                tooltip: 'Profile',
-                onPressed: () {
-                  context.push(Routes.profile);
-                },
-              ),
-            ],
-          ),
-          body: Column(
+        return PageScaffold(
+          title: 'Search Recipes',
+
+          child: Column(
             children: [
               // Search bar
               Padding(
@@ -157,7 +147,7 @@ class _SearchRecipesScreenState extends State<SearchRecipesScreen> {
                               ),
                               trailing: const Icon(Icons.chevron_right),
                               onTap: () {
-                                context.push(Routes.recipeWithId(recipe.id!));
+                                context.pushNamed(RouteNames.searchRecipeDetail, queryParameters: {'bookId': recipe.bookId, 'recipeId': recipe.id!});
                               },
                             ),
                           );
