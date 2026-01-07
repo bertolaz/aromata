@@ -9,7 +9,8 @@ RUN flutter pub get
 
 # Copy app and build
 COPY . .
-RUN flutter build web --release
+RUN touch .env
+RUN flutter build web --release --wasm
 
 # Stage 2: Serve with Nginx
 FROM nginx:alpine
