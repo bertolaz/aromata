@@ -8,6 +8,10 @@ import 'package:aromata_frontend/ui/books_list/view_models/books_list_viewmodel.
 import 'package:aromata_frontend/ui/books_list/widgets/books_list_screen.dart';
 import 'package:aromata_frontend/ui/create_book/view_models/create_book_viewmodel.dart';
 import 'package:aromata_frontend/ui/create_book/widgets/create_book_screen.dart';
+import 'package:aromata_frontend/ui/create_recipe/view_models/create_recipe_viewmodel.dart';
+import 'package:aromata_frontend/ui/create_recipe/widgets/create_recipe_screen.dart';
+import 'package:aromata_frontend/ui/privacy_security/view_models/privacy_security_viewmodel.dart';
+import 'package:aromata_frontend/ui/privacy_security/widgets/privacy_security_screen.dart';
 import 'package:aromata_frontend/ui/profile/view_models/profile_viewmodel.dart';
 import 'package:aromata_frontend/ui/profile/widgets/profile_screen.dart';
 import 'package:aromata_frontend/ui/search_recipes/view_models/search_recipes_viewmodel.dart';
@@ -17,16 +21,41 @@ import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 
 GoRouter router(AuthState authState) {
-
   return GoRouter(
     refreshListenable: authState,
     redirect: (context, state) => _redirect(context, state, authState),
     initialLocation: '/books',
     routes: [
       GoRoute(
-        path: Routes.login,
+        path: '/login',
+        name: RouteNames.login,
         builder: (context, state) =>
             LoginScreen(viewModel: LoginViewModel(authState: authState)),
+      ),
+      GoRoute(
+        path: '/profile',
+        name: RouteNames.profile,
+        builder: (context, state) {
+          var viewModel = ProfileViewModel(
+            authRepository: context.read(),
+            bookRepository: context.read(),
+            recipeRepository: context.read(),
+          );
+          viewModel.loadCounts.execute();
+          return ProfileScreen(viewModel: viewModel);
+        },
+        routes: [
+          GoRoute(
+            path: 'privacy',
+            name: RouteNames.privacy,
+            builder: (context, state) {
+              var viewModel = PrivacySecurityViewModel(
+                authRepository: context.read(),
+              );
+              return PrivacySecurityScreen(viewModel: viewModel);
+            },
+          ),
+        ],
       ),
 
       StatefulShellRoute(
@@ -35,7 +64,8 @@ GoRouter router(AuthState authState) {
             routes: [
               GoRoute(
                 path: '/books',
-                builder: (context, state){
+                name: RouteNames.books,
+                builder: (context, state) {
                   var viewModel = BooksListViewModel(
                     bookRepository: context.read(),
                     recipeRepository: context.read(),
@@ -46,25 +76,41 @@ GoRouter router(AuthState authState) {
                 routes: [
                   GoRoute(
                     path: 'create',
-                    name: 'create-book',
-                    builder: (context, state){
+                    name: RouteNames.createBook,
+                    builder: (context, state) {
                       var viewModel = CreateBookViewModel(
                         bookRepository: context.read(),
                       );
                       return CreateBookScreen(viewModel: viewModel);
-                    }
+                    },
                   ),
                   GoRoute(
                     path: ':bookId',
-                    name: 'book-detail',
+                    name: RouteNames.bookDetail,
                     builder: (context, state) {
                       var viewModel = BookDetailViewModel(
                         bookRepository: context.read(),
                         recipeRepository: context.read(),
                       );
-                      viewModel.loadData.execute(state.pathParameters['bookId']!);
+                      viewModel.loadData.execute(
+                        state.pathParameters['bookId']!,
+                      );
                       return BookDetailScreen(viewModel: viewModel);
-                    }
+                    },
+                    routes: [
+                      GoRoute(
+                        path: 'recipes/create',
+                        name: RouteNames.createRecipe,
+                        builder: (context, state) {
+                          final bookId = state.uri.queryParameters['bookId']!;
+                          var viewModel = CreateRecipeViewModel(
+                            recipeRepository: context.read(),
+                            bookId: bookId,
+                          );
+                          return CreateRecipeScreen(viewModel: viewModel);
+                        },
+                      ),
+                    ],
                   ),
                 ],
               ),
@@ -74,7 +120,7 @@ GoRouter router(AuthState authState) {
             routes: [
               GoRoute(
                 path: '/search',
-                name: 'search-recipes',
+                name: RouteNames.search,
                 builder: (context, state) {
                   var viewModel = SearchRecipesViewModel(
                     bookRepository: context.read(),
@@ -84,21 +130,17 @@ GoRouter router(AuthState authState) {
                   return SearchRecipesScreen(viewModel: viewModel);
                 },
               ),
-            ],
-          ),
-          StatefulShellBranch(
-            routes: [
               GoRoute(
-                path: '/profile',
-                name: 'profile',
+                path: '/recipes/:recipeId',
+                name: RouteNames.recipes,
                 builder: (context, state) {
-                  var viewModel = ProfileViewModel(
-                    authRepository: context.read(),
-                    bookRepository: context.read(),
+                  var viewModel = CreateRecipeViewModel(
                     recipeRepository: context.read(),
                   );
-                  viewModel.loadCounts.execute();
-                  return ProfileScreen(viewModel: viewModel);
+                  viewModel.loadInitialRecipe(
+                    state.pathParameters['recipeId']!,
+                  );
+                  return CreateRecipeScreen(viewModel: viewModel);
                 },
               ),
             ],
@@ -110,13 +152,11 @@ GoRouter router(AuthState authState) {
           body: navigationShell,
           bottomNavigationBar: BottomNavigationBar(
             items: [
-              BottomNavigationBarItem(
-                icon: Icon(Icons.book), 
-                label: 'Books'),
+              BottomNavigationBarItem(icon: Icon(Icons.book), label: 'Books'),
               BottomNavigationBarItem(
                 icon: Icon(Icons.search),
                 label: 'Search',
-              )
+              ),
             ],
             currentIndex: navigationShell.currentIndex,
             onTap: (index) => navigationShell.goBranch(
@@ -141,12 +181,12 @@ Future<String?> _redirect(
 
   // If not logged in and trying to access a protected route, redirect to login
   if (!loggedIn && !isLoginRoute) {
-    return Routes.login;
+    return '/login';
   }
 
   // If logged in and on login page, redirect to home
   if (loggedIn && isLoginRoute) {
-    return '/';
+    return '/books';
   }
 
   // Allow all other routes (including nested routes) to pass through

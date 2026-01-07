@@ -71,8 +71,10 @@ class _PrivacySecurityScreenState extends State<PrivacySecurityScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Consumer<PrivacySecurityViewModel>(
-      builder: (context, viewModel, child) {
+    return ListenableBuilder(
+      listenable: widget.viewModel,
+      builder: (context, child) {
+        final viewModel = widget.viewModel;
         return Scaffold(
           appBar: AppBar(
             title: const Text('Privacy & Security'),

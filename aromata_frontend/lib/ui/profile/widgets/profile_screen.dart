@@ -152,7 +152,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       title: const Text('Privacy & Security'),
                       trailing: const Icon(Icons.chevron_right),
                       onTap: () {
-                        context.push(Routes.privacy);
+                        context.pushNamed('privacy');
                       },
                     ),
                     const Divider(),
@@ -170,6 +170,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                           ? null
                           : () {
                               widget.viewModel.signOut.execute();
+                              context.goNamed('login');
                             },
                     ),
                   ],

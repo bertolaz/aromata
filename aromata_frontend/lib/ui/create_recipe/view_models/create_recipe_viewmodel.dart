@@ -5,33 +5,38 @@ import '../../../viewmodels/base_viewmodel.dart';
 import '../../../repositories/recipe_repository.dart';
 
 class CreateRecipeViewModel extends BaseViewModel {
-  final String bookId;
-  final Recipe? initialRecipe;
   final RecipeRepository _recipeRepository;
 
   String _title = '';
   String _page = '';
   List<String> _tags = [];
   String _tagInput = '';
+  String? _initialRecipeId;
+  String? get initialRecipeId => _initialRecipeId;
+  String? _bookId;
 
   late final Command0<Recipe?> saveRecipe;
   late final Command0<void> deleteRecipe;
 
   CreateRecipeViewModel({
-    required this.bookId,
-    this.initialRecipe,
     required RecipeRepository recipeRepository,
+     String? bookId,
   }) : _recipeRepository = recipeRepository {
-    if (initialRecipe != null) {
-      _title = initialRecipe!.title;
-      _page = initialRecipe!.page.toString();
-      _tags = List<String>.from(initialRecipe!.tags);
-    }
     saveRecipe = Command0<Recipe?>(_saveRecipe);
     deleteRecipe = Command0<void>(_deleteRecipe);
+    _bookId = bookId;
   }
 
-  void setInitialRecipe(Recipe recipe) {
+  void loadInitialRecipe(String recipeId) async {
+    final recipe = await _recipeRepository.getRecipeById(recipeId);
+    if (recipe != null) {
+      _setInitialRecipe(recipe);
+    }
+  }
+
+  void _setInitialRecipe(Recipe recipe) {
+    _initialRecipeId = recipe.id;
+    _bookId = recipe.bookId;
     _title = recipe.title;
     _page = recipe.page.toString();
     _tags = List<String>.from(recipe.tags);
@@ -97,15 +102,15 @@ class CreateRecipeViewModel extends BaseViewModel {
     }
 
     final recipe = Recipe(
-      id: initialRecipe?.id,
-      bookId: bookId,
+      id: _initialRecipeId,
+      bookId: _bookId!,
       title: _title.trim(),
       page: pageNum,
       tags: _tags,
     );
 
     try {
-      if (initialRecipe == null) {
+      if (_initialRecipeId == null) {
         // Create new recipe
         final createdRecipe = await _recipeRepository.createRecipe(
           recipe.bookId,
@@ -130,12 +135,12 @@ class CreateRecipeViewModel extends BaseViewModel {
   }
 
   Future<Result<void>> _deleteRecipe() async {
-    if (initialRecipe == null || initialRecipe!.id == null) {
+    if (_initialRecipeId == null) {
       return Result.error(Exception('Cannot delete a recipe that has not been saved'));
     }
 
     try {
-      await _recipeRepository.deleteRecipe(initialRecipe!.id!);
+      await _recipeRepository.deleteRecipe(_initialRecipeId!);
       return Result.ok(null);
     } catch (e) {
       return Result.error(Exception('Failed to delete recipe: $e'));

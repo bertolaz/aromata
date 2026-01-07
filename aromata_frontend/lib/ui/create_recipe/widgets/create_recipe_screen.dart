@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import 'package:provider/provider.dart';
 import 'package:aromata_frontend/utils/result.dart';
 import '../view_models/create_recipe_viewmodel.dart';
 
@@ -91,7 +90,7 @@ class _CreateRecipeScreenState extends State<CreateRecipeScreen> {
   }
 
   void _deleteRecipe() {
-    if (widget.viewModel.initialRecipe == null) return;
+    if (widget.viewModel.initialRecipeId == null) return;
 
     showDialog(
       context: context,
@@ -99,7 +98,7 @@ class _CreateRecipeScreenState extends State<CreateRecipeScreen> {
         return AlertDialog(
           title: const Text('Delete Recipe'),
           content: Text(
-            'Are you sure you want to delete "${widget.viewModel.initialRecipe!.title}"? This action cannot be undone.',
+            'Are you sure you want to delete "${widget.viewModel.title}"? This action cannot be undone.',
           ),
           actions: [
             TextButton(
@@ -124,14 +123,16 @@ class _CreateRecipeScreenState extends State<CreateRecipeScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Consumer<CreateRecipeViewModel>(
-      builder: (context, viewModel, child) {
+    return ListenableBuilder(
+      listenable: widget.viewModel,
+      builder: (context, child) {
+        final viewModel = widget.viewModel;
         return Scaffold(
           appBar: AppBar(
-            title: Text(viewModel.initialRecipe == null ? 'New Recipe' : 'Edit Recipe'),
+            title: Text(viewModel.initialRecipeId == null ? 'New Recipe' : 'Edit Recipe'),
             backgroundColor: Theme.of(context).colorScheme.inversePrimary,
             actions: [
-              if (viewModel.initialRecipe != null)
+              if (viewModel.initialRecipeId != null)
                 IconButton(
                   icon: const Icon(Icons.delete),
                   tooltip: 'Delete Recipe',
@@ -247,7 +248,7 @@ class _CreateRecipeScreenState extends State<CreateRecipeScreen> {
                           child: CircularProgressIndicator(strokeWidth: 2),
                         )
                       : Text(
-                          viewModel.initialRecipe == null ? 'Create Recipe' : 'Update Recipe',
+                          viewModel.initialRecipeId == null ? 'Create Recipe' : 'Update Recipe',
                           style: const TextStyle(fontSize: 16),
                         ),
                 ),
