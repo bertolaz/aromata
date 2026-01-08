@@ -107,6 +107,7 @@ class _LoginScreenState extends State<LoginScreen> {
                       border: OutlineInputBorder(),
                       prefixIcon: Icon(Icons.email),
                     ),
+                    autofillHints: const [AutofillHints.email, AutofillHints.username],
                     keyboardType: TextInputType.emailAddress,
                     autocorrect: false,
                     validator: (value) {
@@ -130,6 +131,7 @@ class _LoginScreenState extends State<LoginScreen> {
                       border: OutlineInputBorder(),
                       prefixIcon: Icon(Icons.lock),
                     ),
+                    autofillHints: const [AutofillHints.password],
                     obscureText: true,
                     validator: (value) {
                       if (value == null || value.isEmpty) {

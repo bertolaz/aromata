@@ -18,6 +18,8 @@ import 'package:aromata_frontend/ui/profile/view_models/profile_viewmodel.dart';
 import 'package:aromata_frontend/ui/profile/widgets/profile_screen.dart';
 import 'package:aromata_frontend/ui/search_recipes/view_models/search_recipes_viewmodel.dart';
 import 'package:aromata_frontend/ui/search_recipes/widgets/search_recipes_screen.dart';
+import 'package:aromata_frontend/ui/search_recipe_detail/view_models/search_recipe_detail_viewmodel.dart';
+import 'package:aromata_frontend/ui/search_recipe_detail/widgets/search_recipe_detail_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
@@ -153,7 +155,18 @@ GoRouter router(AuthState authState) {
                     path: 'recipe',
                     name: RouteNames.searchRecipeDetail,
                     builder: (context, state) {
-                      return _createRecipeScreen(context, state.uri.queryParameters['bookId']!, state.uri.queryParameters['recipeId']!);
+                      final recipeId = state.uri.queryParameters['recipeId'];
+                      if (recipeId == null) {
+                        return const Scaffold(
+                          body: Center(child: Text('Recipe ID is required')),
+                        );
+                      }
+                      final viewModel = SearchRecipeDetailViewModel(
+                        recipeRepository: context.read(),
+                        bookRepository: context.read(),
+                      );
+                      viewModel.loadData.execute(recipeId);
+                      return SearchRecipeDetailScreen(viewModel: viewModel);
                     },
                   ),
                 ],
