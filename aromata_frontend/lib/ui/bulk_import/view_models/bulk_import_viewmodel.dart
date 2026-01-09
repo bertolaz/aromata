@@ -2,13 +2,13 @@ import 'dart:convert';
 import 'dart:typed_data';
 import 'package:aromata_frontend/utils/command.dart';
 import 'package:aromata_frontend/utils/result.dart';
+import 'package:flutter/foundation.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:image/image.dart' as img;
 import '../../../domain/models/recipe.dart';
-import '../../../viewmodels/base_viewmodel.dart';
 import '../../../repositories/recipe_repository.dart';
 
-class BulkImportViewModel extends BaseViewModel {
+class BulkImportViewModel extends ChangeNotifier {
   final String bookId;
   final RecipeRepository _recipeRepository;
 
@@ -162,22 +162,14 @@ class BulkImportViewModel extends BaseViewModel {
           .map((index) => _extractedRecipes[index])
           .toList();
 
-      for (final recipe in selectedRecipes) {
-        try {
-          await _recipeRepository.createRecipe(
-            recipe.bookId,
-            recipe.title,
-            recipe.page,
-            recipe.tags,
-          );
-        } catch (e) {
-          return Result.error(Exception('Failed to import recipe: ${recipe.title}'));
-        }
-      }
-
+      await _recipeRepository.createRecipeBulk(selectedRecipes);
+      
       return Result.ok(null);
     } catch (e) {
       return Result.error(Exception('Failed to import recipes: $e'));
+    }
+    finally {
+      notifyListeners();
     }
   }
 }

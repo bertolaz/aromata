@@ -1,3 +1,5 @@
+import 'package:aromata_frontend/utils/result.dart';
+
 import '../domain/models/recipe.dart';
 import 'recipe_repository.dart';
 import '../services/supabase_service.dart';
@@ -72,5 +74,20 @@ class SupabaseRecipeRepository implements RecipeRepository {
       bookId,
     );
     return response;
+  }
+  
+  @override
+  Future<Result<void>> createRecipeBulk(List<Recipe> selectedRecipes) async {
+    try {
+      await _supabaseService.createRecipeBulk(selectedRecipes.map((recipe) => {
+      'book_id': recipe.bookId,
+      'title': recipe.title,
+      'page': recipe.page,
+    }).toList());
+
+    return Result.ok(null);
+    } catch (e) {
+      return Result.error(Exception('Failed to create recipes in bulk: $e'));
+    }
   }
 }

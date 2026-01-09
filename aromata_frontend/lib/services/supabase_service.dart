@@ -183,6 +183,70 @@ class SupabaseService {
     }
   }
 
+  Future<List<Recipe>> createRecipeBulk(
+    List<Map<String, dynamic>> recipes,
+  ) async {
+    try {
+      if (recipes.isEmpty) {
+        return [];
+      }
+
+      // Prepare recipe data for bulk insert
+      final recipesData = recipes.map((recipe) => {
+        'book_id': recipe['book_id'],
+        'title': recipe['title'],
+        'page': recipe['page'],
+      }).toList();
+
+      // Bulk insert recipes
+      final response = await _supabase
+          .from('recipes')
+          .insert(recipesData)
+          .select();
+
+      final createdRecipes = (response as List)
+          .map((json) => Recipe(
+                id: json['id'],
+                bookId: json['book_id'],
+                title: json['title'],
+                page: json['page'],
+                tags: [],
+              ))
+          .toList();
+
+      // Add tags for each recipe in bulk
+      final tagsData = <Map<String, dynamic>>[];
+      for (var i = 0; i < createdRecipes.length; i++) {
+        final recipe = recipes[i];
+        final tags = recipe['tags'] as List<String>? ?? [];
+        final recipeId = createdRecipes[i].id!;
+        
+        for (final tag in tags) {
+          tagsData.add({
+            'recipe_id': recipeId,
+            'tag': tag,
+          });
+        }
+      }
+
+      // Bulk insert tags if any
+      if (tagsData.isNotEmpty) {
+        await _supabase.from('recipe_tags').insert(tagsData);
+      }
+
+      // Load tags for each recipe to return complete recipes
+      final recipesWithTags = <Recipe>[];
+      for (var recipe in createdRecipes) {
+        final tags = await getRecipeTags(recipe.id!);
+        recipesWithTags.add(recipe.copyWith(tags: tags));
+      }
+
+      return recipesWithTags;
+    } catch (e) {
+      throw Exception('Failed to create recipes in bulk: $e');
+    }
+  }
+
   Future<Recipe> updateRecipe(
     String id,
     String title,
@@ -271,27 +335,26 @@ class SupabaseService {
     final response = await _supabase.functions.invoke(
       'extract-recipes',
       body: {'image_base64': imageBase64, 'book_id': bookId},
-      headers: {'Authorization': 'Bearer ${userSession.accessToken}'},
     );
-    
+
     if (response.data == null) {
       throw Exception('No data returned from API');
     }
-    
+
     try {
       final data = response.data as Map<String, dynamic>;
-      
+
       // Check for error response
       if (data.containsKey('error')) {
         throw Exception(data['error'] as String);
       }
-      
+
       // Extract recipes array
       final recipesData = data['recipes'] as List<dynamic>?;
       if (recipesData == null) {
         throw Exception('No recipes found in response');
       }
-      
+
       // Map recipes - Edge Function returns only title and page
       return recipesData
           .map(

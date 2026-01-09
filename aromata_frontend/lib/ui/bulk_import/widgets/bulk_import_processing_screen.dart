@@ -40,7 +40,8 @@ class _BulkImportProcessingScreenState
       case Ok():
         widget.viewModel.processImage.clearResult();
         // Navigate to selection screen with extracted recipes
-        context.pushNamed(
+        // Use pushReplacementNamed so back button goes to bulk-import screen (not processing)
+        context.pushReplacementNamed(
           RouteNames.bulkImportSelection,
           pathParameters: {'bookId': widget.viewModel.bookId},
           extra: {

@@ -238,28 +238,7 @@ class _BulkImportScreenState extends State<BulkImportScreen> {
                   ),
                 ],
 
-                // Error message
-                if (viewModel.hasError) ...[
-                  const SizedBox(height: 16),
-                  Card(
-                    color: Colors.red[50],
-                    child: Padding(
-                      padding: const EdgeInsets.all(16),
-                      child: Row(
-                        children: [
-                          Icon(Icons.error_outline, color: Colors.red[700]),
-                          const SizedBox(width: 8),
-                          Expanded(
-                            child: Text(
-                              viewModel.errorMessage ?? 'An error occurred',
-                              style: TextStyle(color: Colors.red[700]),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                ],
+                
               ],
             ),
           ),

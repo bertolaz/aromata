@@ -25,5 +25,7 @@ abstract class RecipeRepository {
   /// The bookId is the id of the book to extract recipes from
   /// The recipes are returned as a list of Recipe objects
   Future<List<Recipe>> extractRecipesFromImage(String imageBase64, String bookId);
+
+  Future<void> createRecipeBulk(List<Recipe> selectedRecipes) async {}
 }
 

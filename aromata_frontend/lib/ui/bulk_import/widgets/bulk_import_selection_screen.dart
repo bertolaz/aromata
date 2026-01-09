@@ -1,6 +1,8 @@
 import 'package:aromata_frontend/ui/core/page_scaffold.dart';
 import 'package:flutter/material.dart';
 import 'package:aromata_frontend/utils/result.dart';
+import 'package:aromata_frontend/routing/routes.dart';
+import 'package:go_router/go_router.dart';
 import '../view_models/bulk_import_viewmodel.dart';
 
 class BulkImportSelectionScreen extends StatefulWidget {
@@ -18,6 +20,7 @@ class BulkImportSelectionScreen extends StatefulWidget {
 
 class _BulkImportSelectionScreenState
     extends State<BulkImportSelectionScreen> {
+
   @override
   void initState() {
     super.initState();
@@ -38,37 +41,38 @@ class _BulkImportSelectionScreenState
   }
 
   void _onImportResult() {
-    final result = widget.viewModel.importSelectedRecipes.result;
-    if (result == null) return;
+    
+    final currentResult = widget.viewModel.importSelectedRecipes.result;
+    if (currentResult == null) return;
 
-    switch (result) {
+    switch (currentResult) {
       case Ok():
         widget.viewModel.importSelectedRecipes.clearResult();
-        // Pop back to book detail screen (pop processing + selection screens)
-        if (Navigator.of(context).canPop()) {
-          Navigator.of(context).pop(); // Pop selection screen
-        }
-        if (Navigator.of(context).canPop()) {
-          Navigator.of(context).pop(); // Pop processing screen
-        }
-        if (Navigator.of(context).canPop()) {
-          Navigator.of(context).pop(); // Pop bulk import screen
-        }
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Recipes imported successfully!'),
-            backgroundColor: Colors.green,
-          ),
+        // Navigate to book detail, replacing the entire import flow
+        // This ensures back button from book detail goes to book list
+        context.pushReplacementNamed(
+          RouteNames.bookDetail,
+          pathParameters: {'bookId': widget.viewModel.bookId},
         );
+        // Show success message
+        Future.delayed(const Duration(milliseconds: 300), () {
+          if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(
+                content: Text('Recipes imported successfully!'),
+                backgroundColor: Colors.green,
+              ),
+            );
+          }
+        });
         break;
       case Error():
-        widget.viewModel.importSelectedRecipes.clearResult();
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Error importing recipes: ${result.error}'),
-            backgroundColor: Colors.red,
-          ),
-        );
+            SnackBar(
+              content: Text('Error importing recipes: ${currentResult.error}'),
+              backgroundColor: Colors.red,
+            ),
+          );
         break;
     }
   }
@@ -76,15 +80,20 @@ class _BulkImportSelectionScreenState
   @override
   Widget build(BuildContext context) {
     return ListenableBuilder(
-      listenable: widget.viewModel,
+      listenable: Listenable.merge([
+        widget.viewModel,
+        widget.viewModel.importSelectedRecipes,
+      ]),
       builder: (context, child) {
         final viewModel = widget.viewModel;
-        return PageScaffold(
-          title: 'Select Recipes to Import',
-          hideProfileButton: true,
-          child: SafeArea(
-            child: Column(
-              children: [
+        return Stack(
+          children: [
+            PageScaffold(
+              title: 'Select Recipes to Import',
+              hideProfileButton: true,
+              child: SafeArea(
+                child: Column(
+                  children: [
                 // Header with selection info
                 Container(
                   padding: const EdgeInsets.all(16),
@@ -243,7 +252,10 @@ class _BulkImportSelectionScreenState
                   child: ElevatedButton.icon(
                     onPressed: viewModel.hasSelectedRecipes &&
                             !viewModel.importSelectedRecipes.running
-                        ? () => viewModel.importSelectedRecipes.execute()
+                        ? () {
+                            // Execute the import command
+                            viewModel.importSelectedRecipes.execute();
+                          }
                         : null,
                     icon: viewModel.importSelectedRecipes.running
                         ? const SizedBox(
@@ -268,6 +280,42 @@ class _BulkImportSelectionScreenState
               ],
             ),
           ),
+            ),
+            // Loading overlay
+            if (viewModel.importSelectedRecipes.running)
+              PopScope(
+                canPop: false, // Prevent back button during import
+                child: Material(
+                  color: Colors.black.withValues(alpha: 0.5),
+                  child: Center(
+                    child: Card(
+                      child: Padding(
+                        padding: const EdgeInsets.all(24),
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            const CircularProgressIndicator(),
+                            const SizedBox(height: 16),
+                            Text(
+                              'Importing recipes...',
+                              style: Theme.of(context).textTheme.titleMedium,
+                            ),
+                            const SizedBox(height: 8),
+                            Text(
+                              'Please wait while we save your recipes',
+                              style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                                    color: Colors.grey[600],
+                                  ),
+                              textAlign: TextAlign.center,
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+          ],
         );
       },
     );

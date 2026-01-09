@@ -11,7 +11,10 @@ class BooksListScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return ListenableBuilder(
-      listenable: viewModel,
+      listenable: Listenable.merge([
+        viewModel,
+        viewModel.loadData,
+      ]),
       builder: (context, child) {
         final viewModel = this.viewModel;
         return PageScaffold(
@@ -23,55 +26,58 @@ class BooksListScreen extends StatelessWidget {
             tooltip: 'Add Recipe Book',
             child: const Icon(Icons.add),
           ),
-          child: viewModel.books.isEmpty
-              ? Center(
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Icon(Icons.menu_book, size: 64, color: Colors.grey[400]),
-                      const SizedBox(height: 16),
-                      Text(
-                        'No recipe books yet',
-                        style: TextStyle(fontSize: 18, color: Colors.grey[600]),
-                      ),
-                      const SizedBox(height: 8),
-                      Text(
-                        'Tap the + button to create your first book',
-                        style: TextStyle(fontSize: 14, color: Colors.grey[500]),
-                      ),
-                    ],
-                  ),
+          child: viewModel.loadData.running
+              ? const Center(
+                  child: CircularProgressIndicator(),
                 )
-              : ListView.builder(
-                  itemCount: viewModel.books.length,
-                  padding: const EdgeInsets.all(8),
-                  itemBuilder: (context, index) {
-                    final book = viewModel.books[index];
-                    return Card(
-                      margin: const EdgeInsets.symmetric(
-                        horizontal: 8,
-                        vertical: 4,
+              : viewModel.books.isEmpty
+                  ? Center(
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(Icons.menu_book, size: 64, color: Colors.grey[400]),
+                          const SizedBox(height: 16),
+                          Text(
+                            'No recipe books yet',
+                            style: TextStyle(fontSize: 18, color: Colors.grey[600]),
+                          ),
+                          const SizedBox(height: 8),
+                          Text(
+                            'Tap the + button to create your first book',
+                            style: TextStyle(fontSize: 14, color: Colors.grey[500]),
+                          ),
+                        ],
                       ),
-                      color: Theme.of(context).colorScheme.surface,
-            
-                      child: ListTile(
-                        leading: Icon(Icons.menu_book, color: Theme.of(context).colorScheme.primary),
-                        title: Text(
-                          book.title,
-                          style: const TextStyle(fontWeight: FontWeight.bold),
-                        ),
-                        subtitle: Text('By ${book.author}'),
-                        trailing: const Icon(Icons.chevron_right),
-                        onTap: () {
-                          context.pushNamed(
-                            'book-detail',
-                            pathParameters: {'bookId': book.id!},
-                          );
-                        },
-                      ),
-                    );
-                  },
-                ),
+                    )
+                  : ListView.builder(
+                      itemCount: viewModel.books.length,
+                      padding: const EdgeInsets.all(8),
+                      itemBuilder: (context, index) {
+                        final book = viewModel.books[index];
+                        return Card(
+                          margin: const EdgeInsets.symmetric(
+                            horizontal: 8,
+                            vertical: 4,
+                          ),
+                          color: Theme.of(context).colorScheme.surface,
+                          child: ListTile(
+                            leading: Icon(Icons.menu_book, color: Theme.of(context).colorScheme.primary),
+                            title: Text(
+                              book.title,
+                              style: const TextStyle(fontWeight: FontWeight.bold),
+                            ),
+                            subtitle: Text('By ${book.author}'),
+                            trailing: const Icon(Icons.chevron_right),
+                            onTap: () {
+                              context.pushNamed(
+                                'book-detail',
+                                pathParameters: {'bookId': book.id!},
+                              );
+                            },
+                          ),
+                        );
+                      },
+                    ),
         );
       },
     );

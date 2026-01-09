@@ -227,23 +227,29 @@ GoRouter router(AuthState authState) {
         ],
         navigatorContainerBuilder: (context, state, child) =>
             IndexedStack(index: state.currentIndex, children: child),
-        builder: (context, state, navigationShell) => Scaffold(
-          body: navigationShell,
-          bottomNavigationBar: BottomNavigationBar(
-            items: [
-              BottomNavigationBarItem(icon: Icon(Icons.book), label: 'Books'),
-              BottomNavigationBarItem(
-                icon: Icon(Icons.search),
-                label: 'Search',
-              ),
-            ],
-            currentIndex: navigationShell.currentIndex,
-            onTap: (index) => navigationShell.goBranch(
-              index,
-              initialLocation: index == navigationShell.currentIndex,
-            ),
-          ),
-        ),
+        builder: (context, state, navigationShell) {
+          // Hide bottom bar for bulk import processing screen
+          final hideBottomBar = state.uri.path.contains('/bulk-import/processing');
+          return Scaffold(
+            body: navigationShell,
+            bottomNavigationBar: hideBottomBar
+                ? null
+                : BottomNavigationBar(
+                    items: [
+                      BottomNavigationBarItem(icon: Icon(Icons.book), label: 'Books'),
+                      BottomNavigationBarItem(
+                        icon: Icon(Icons.search),
+                        label: 'Search',
+                      ),
+                    ],
+                    currentIndex: navigationShell.currentIndex,
+                    onTap: (index) => navigationShell.goBranch(
+                      index,
+                      initialLocation: index == navigationShell.currentIndex,
+                    ),
+                  ),
+          );
+        },
       ),
     ],
   );
