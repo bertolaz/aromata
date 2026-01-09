@@ -13,4 +13,6 @@ abstract final class RouteNames {
   static const String profile = 'profile';
   static const String privacy = 'privacy';
   static const String bulkImport = 'bulk-import';
+  static const String bulkImportProcessing = 'bulk-import-processing';
+  static const String bulkImportSelection = 'bulk-import-selection';
 }

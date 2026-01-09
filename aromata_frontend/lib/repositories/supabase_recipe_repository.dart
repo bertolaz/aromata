@@ -30,17 +30,30 @@ class SupabaseRecipeRepository implements RecipeRepository {
   }
 
   @override
-  Future<Recipe> createRecipe(String bookId, String title, int page, List<String> tags) async {
+  Future<Recipe> createRecipe(
+    String bookId,
+    String title,
+    int page,
+    List<String> tags,
+  ) async {
     await _supabaseService.createRecipe(bookId, title, page, tags);
     // Fetch the newly created recipe
     final recipes = await _supabaseService.getAllRecipes();
     return recipes.firstWhere(
-      (recipe) => recipe.bookId == bookId && recipe.title == title && recipe.page == page,
+      (recipe) =>
+          recipe.bookId == bookId &&
+          recipe.title == title &&
+          recipe.page == page,
     );
   }
 
   @override
-  Future<void> updateRecipe(String id, String title, int page, List<String> tags) async {
+  Future<void> updateRecipe(
+    String id,
+    String title,
+    int page,
+    List<String> tags,
+  ) async {
     await _supabaseService.updateRecipe(id, title, page, tags);
   }
 
@@ -48,5 +61,16 @@ class SupabaseRecipeRepository implements RecipeRepository {
   Future<void> deleteRecipe(String id) async {
     await _supabaseService.deleteRecipe(id);
   }
-}
 
+  @override
+  Future<List<Recipe>> extractRecipesFromImage(
+    String imageBase64,
+    String bookId,
+  ) async {
+    final response = await _supabaseService.extractRecipesFromImage(
+      imageBase64,
+      bookId,
+    );
+    return response;
+  }
+}

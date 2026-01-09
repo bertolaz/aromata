@@ -1,6 +1,8 @@
 import 'package:aromata_frontend/ui/core/page_scaffold.dart';
 import 'package:flutter/material.dart';
 import 'package:aromata_frontend/utils/result.dart';
+import 'package:go_router/go_router.dart';
+import 'package:aromata_frontend/routing/routes.dart';
 import '../view_models/bulk_import_viewmodel.dart';
 
 class BulkImportScreen extends StatefulWidget {
@@ -49,6 +51,8 @@ class _BulkImportScreenState extends State<BulkImportScreen> {
   }
 
   void _onProcessImageResult() {
+    // This is now handled by the processing screen
+    // We keep this listener for error handling if user navigates back
     final result = widget.viewModel.processImage.result;
     if (result == null) return;
 
@@ -216,19 +220,18 @@ class _BulkImportScreenState extends State<BulkImportScreen> {
                   ElevatedButton.icon(
                     onPressed: viewModel.processImage.running
                         ? null
-                        : () => viewModel.processImage.execute(),
-                    icon: viewModel.processImage.running
-                        ? const SizedBox(
-                            width: 20,
-                            height: 20,
-                            child: CircularProgressIndicator(strokeWidth: 2),
-                          )
-                        : const Icon(Icons.auto_awesome),
-                    label: Text(
-                      viewModel.processImage.running
-                          ? 'Processing...'
-                          : 'Process with AI',
-                    ),
+                        : () {
+                            // Navigate to processing screen with viewModel
+                            context.pushNamed(
+                              RouteNames.bulkImportProcessing,
+                              pathParameters: {'bookId': viewModel.bookId},
+                              extra: {'viewModel': viewModel},
+                            );
+                            // Then start processing
+                            viewModel.processImage.execute();
+                          },
+                    icon: const Icon(Icons.auto_awesome),
+                    label: const Text('Process with AI'),
                     style: ElevatedButton.styleFrom(
                       padding: const EdgeInsets.symmetric(vertical: 16),
                     ),
@@ -256,132 +259,6 @@ class _BulkImportScreenState extends State<BulkImportScreen> {
                       ),
                     ),
                   ),
-                ],
-
-                // Extracted recipes
-                if (viewModel.hasExtractedRecipes) ...[
-                  const SizedBox(height: 32),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            'Extracted Recipes (${viewModel.extractedRecipes.length})',
-                            style: Theme.of(context).textTheme.titleLarge
-                                ?.copyWith(fontWeight: FontWeight.bold),
-                          ),
-                          if (viewModel.hasSelectedRecipes)
-                            Text(
-                              '${viewModel.selectedRecipeIndices.length} selected',
-                              style: Theme.of(context).textTheme.bodySmall
-                                  ?.copyWith(
-                                    color: Theme.of(
-                                      context,
-                                    ).colorScheme.primary,
-                                  ),
-                            ),
-                        ],
-                      ),
-                      Row(
-                        children: [
-                          if (viewModel.selectedRecipeIndices.length <
-                              viewModel.extractedRecipes.length)
-                            TextButton.icon(
-                              onPressed: () => viewModel.selectAllRecipes(),
-                              icon: const Icon(Icons.select_all, size: 18),
-                              label: const Text('Select All'),
-                            ),
-                          if (viewModel.hasSelectedRecipes) ...[
-                            const SizedBox(width: 8),
-                            TextButton.icon(
-                              onPressed: () => viewModel.deselectAllRecipes(),
-                              icon: const Icon(Icons.deselect, size: 18),
-                              label: const Text('Deselect All'),
-                            ),
-                            const SizedBox(width: 8),
-                          ],
-                          ElevatedButton.icon(
-                            onPressed:
-                                viewModel.hasSelectedRecipes &&
-                                    !viewModel.importSelectedRecipes.running
-                                ? () =>
-                                      viewModel.importSelectedRecipes.execute()
-                                : null,
-                            icon: viewModel.importSelectedRecipes.running
-                                ? const SizedBox(
-                                    width: 20,
-                                    height: 20,
-                                    child: CircularProgressIndicator(
-                                      strokeWidth: 2,
-                                    ),
-                                  )
-                                : const Icon(Icons.check),
-                            label: Text(
-                              viewModel.hasSelectedRecipes
-                                  ? 'Import (${viewModel.selectedRecipeIndices.length})'
-                                  : 'Import',
-                            ),
-                          ),
-                        ],
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 16),
-                  ...viewModel.extractedRecipes.asMap().entries.map((entry) {
-                    final index = entry.key;
-                    final recipe = entry.value;
-                    final isSelected = viewModel.selectedRecipeIndices.contains(
-                      index,
-                    );
-
-                    return Card(
-                      margin: const EdgeInsets.only(bottom: 8),
-                      color: isSelected
-                          ? Theme.of(context).colorScheme.primaryContainer
-                                .withValues(alpha: 0.3)
-                          : null,
-                      child: CheckboxListTile(
-                        value: isSelected,
-                        onChanged: (value) =>
-                            viewModel.toggleRecipeSelection(index),
-                        secondary: CircleAvatar(
-                          child: Text(
-                            recipe.page.toString(),
-                            style: const TextStyle(fontSize: 12),
-                          ),
-                        ),
-                        title: Text(
-                          recipe.title,
-                          style: const TextStyle(fontWeight: FontWeight.bold),
-                        ),
-                        subtitle: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text('Page ${recipe.page}'),
-                            if (recipe.tags.isNotEmpty)
-                              Wrap(
-                                spacing: 4,
-                                runSpacing: 4,
-                                children: recipe.tags
-                                    .map(
-                                      (tag) => Chip(
-                                        label: Text(
-                                          tag,
-                                          style: const TextStyle(fontSize: 11),
-                                        ),
-                                        padding: EdgeInsets.zero,
-                                        visualDensity: VisualDensity.compact,
-                                      ),
-                                    )
-                                    .toList(),
-                              ),
-                          ],
-                        ),
-                      ),
-                    );
-                  }),
                 ],
               ],
             ),

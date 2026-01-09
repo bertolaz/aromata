@@ -3,7 +3,6 @@ import 'dart:typed_data';
 import 'package:aromata_frontend/utils/command.dart';
 import 'package:aromata_frontend/utils/result.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:image/image.dart' as img;
 import '../../../domain/models/recipe.dart';
 import '../../../viewmodels/base_viewmodel.dart';
@@ -108,45 +107,30 @@ class BulkImportViewModel extends BaseViewModel {
     }
 
     try {
-      final supabase = Supabase.instance.client;
       final imageBase64 = base64Encode(_selectedImage!);
 
-      final response = await supabase.functions.invoke(
-        'extract-recipes',
-        body: {
-          'image_base64': imageBase64,
-          'book_id': bookId,
-        },
+      final recipes = await _recipeRepository.extractRecipesFromImage(
+        imageBase64,
+        bookId,
       );
-
-      if (response.data == null) {
-        return Result.error(Exception('No data returned from API'));
-      }
-
-      final data = response.data as Map<String, dynamic>;
-      final recipesData = data['recipes'] as List<dynamic>?;
-
-      if (recipesData == null || recipesData.isEmpty) {
+      if (recipes.isEmpty) {
         return Result.error(Exception('No recipes found in the image'));
       }
 
-      _extractedRecipes = recipesData.asMap().entries.map((entry) {
-        final item = entry.value as Map<String, dynamic>;
-        return Recipe(
-          id: '${DateTime.now().millisecondsSinceEpoch}_${entry.key}',
-          bookId: bookId,
-          title: item['title'] as String,
-          page: item['page'] as int,
-          tags: [],
-        );
-      }).toList();
-
+      _extractedRecipes = recipes;
       _selectedRecipeIndices = Set.from(Iterable.generate(_extractedRecipes.length));
       notifyListeners();
       return Result.ok(null);
     } catch (e) {
       return Result.error(Exception('Failed to process image: $e'));
     }
+  }
+
+  /// Set extracted recipes (used when navigating from processing screen)
+  void setExtractedRecipes(List<Recipe> recipes) {
+    _extractedRecipes = recipes;
+    _selectedRecipeIndices = Set.from(Iterable.generate(_extractedRecipes.length));
+    notifyListeners();
   }
 
   void toggleRecipeSelection(int index) {

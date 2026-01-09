@@ -14,11 +14,13 @@ class SupabaseService {
           .order('created_at', ascending: false);
 
       return (response as List)
-          .map((json) => Book(
-                id: json['id'],
-                title: json['title'],
-                author: json['author'],
-              ))
+          .map(
+            (json) => Book(
+              id: json['id'],
+              title: json['title'],
+              author: json['author'],
+            ),
+          )
           .toList();
     } catch (e) {
       throw Exception('Failed to fetch books: $e');
@@ -34,11 +36,7 @@ class SupabaseService {
 
       final response = await _supabase
           .from('books')
-          .insert({
-            'user_id': user.id,
-            'title': title,
-            'author': author,
-          })
+          .insert({'user_id': user.id, 'title': title, 'author': author})
           .select()
           .single();
 
@@ -56,10 +54,7 @@ class SupabaseService {
     try {
       final response = await _supabase
           .from('books')
-          .update({
-            'title': title,
-            'author': author,
-          })
+          .update({'title': title, 'author': author})
           .eq('id', id)
           .select()
           .single();
@@ -92,13 +87,15 @@ class SupabaseService {
           .order('page', ascending: true);
 
       final recipes = (response as List)
-          .map((json) => Recipe(
-                id: json['id'],
-                bookId: json['book_id'],
-                title: json['title'],
-                page: json['page'],
-                tags: [], // Will be loaded separately
-              ))
+          .map(
+            (json) => Recipe(
+              id: json['id'],
+              bookId: json['book_id'],
+              title: json['title'],
+              page: json['page'],
+              tags: [], // Will be loaded separately
+            ),
+          )
           .toList();
 
       // Load tags for each recipe
@@ -132,13 +129,15 @@ class SupabaseService {
           .order('page', ascending: true);
 
       final recipes = (response as List)
-          .map((json) => Recipe(
-                id: json['id'],
-                bookId: json['book_id'],
-                title: json['title'],
-                page: json['page'],
-                tags: [], // Will be loaded separately
-              ))
+          .map(
+            (json) => Recipe(
+              id: json['id'],
+              bookId: json['book_id'],
+              title: json['title'],
+              page: json['page'],
+              tags: [], // Will be loaded separately
+            ),
+          )
           .toList();
 
       // Load tags for each recipe
@@ -163,11 +162,7 @@ class SupabaseService {
     try {
       final response = await _supabase
           .from('recipes')
-          .insert({
-            'book_id': bookId,
-            'title': title,
-            'page': page,
-          })
+          .insert({'book_id': bookId, 'title': title, 'page': page})
           .select()
           .single();
 
@@ -197,10 +192,7 @@ class SupabaseService {
     try {
       final response = await _supabase
           .from('recipes')
-          .update({
-            'title': title,
-            'page': page,
-          })
+          .update({'title': title, 'page': page})
           .eq('id', id)
           .select()
           .single();
@@ -250,10 +242,9 @@ class SupabaseService {
     try {
       if (tags.isEmpty) return;
 
-      final tagsData = tags.map((tag) => {
-            'recipe_id': recipeId,
-            'tag': tag,
-          }).toList();
+      final tagsData = tags
+          .map((tag) => {'recipe_id': recipeId, 'tag': tag})
+          .toList();
 
       await _supabase.from('recipe_tags').insert(tagsData);
     } catch (e) {
@@ -263,13 +254,61 @@ class SupabaseService {
 
   Future<void> deleteRecipeTags(String recipeId) async {
     try {
-      await _supabase
-          .from('recipe_tags')
-          .delete()
-          .eq('recipe_id', recipeId);
+      await _supabase.from('recipe_tags').delete().eq('recipe_id', recipeId);
     } catch (e) {
       throw Exception('Failed to delete tags: $e');
     }
   }
-}
 
+  Future<List<Recipe>> extractRecipesFromImage(
+    String imageBase64,
+    String bookId,
+  ) async {
+    var userSession = _supabase.auth.currentSession;
+    if (userSession == null) {
+      throw Exception('User not authenticated');
+    }
+    final response = await _supabase.functions.invoke(
+      'extract-recipes',
+      body: {'image_base64': imageBase64, 'book_id': bookId},
+      headers: {'Authorization': 'Bearer ${userSession.accessToken}'},
+    );
+    
+    if (response.data == null) {
+      throw Exception('No data returned from API');
+    }
+    
+    try {
+      final data = response.data as Map<String, dynamic>;
+      
+      // Check for error response
+      if (data.containsKey('error')) {
+        throw Exception(data['error'] as String);
+      }
+      
+      // Extract recipes array
+      final recipesData = data['recipes'] as List<dynamic>?;
+      if (recipesData == null) {
+        throw Exception('No recipes found in response');
+      }
+      
+      // Map recipes - Edge Function returns only title and page
+      return recipesData
+          .map(
+            (recipe) => Recipe(
+              id: null, // Recipes don't have IDs until they're saved
+              bookId: bookId, // Use the bookId parameter
+              title: recipe['title'] as String,
+              page: recipe['page'] as int,
+              tags: [],
+            ),
+          )
+          .toList();
+    } catch (e) {
+      if (e is Exception) {
+        rethrow;
+      }
+      throw Exception('Failed to extract recipes from image: $e');
+    }
+  }
+}

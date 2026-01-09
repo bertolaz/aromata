@@ -19,5 +19,11 @@ abstract class RecipeRepository {
 
   /// Delete a recipe
   Future<void> deleteRecipe(String id);
+
+  /// Extract recipes from an image
+  /// The image is a base64 encoded string
+  /// The bookId is the id of the book to extract recipes from
+  /// The recipes are returned as a list of Recipe objects
+  Future<List<Recipe>> extractRecipesFromImage(String imageBase64, String bookId);
 }
 

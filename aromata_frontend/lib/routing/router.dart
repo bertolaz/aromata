@@ -1,5 +1,6 @@
 import 'package:aromata_frontend/routing/routes.dart';
 import 'package:aromata_frontend/services/authState.dart';
+import 'package:aromata_frontend/domain/models/recipe.dart';
 import 'package:aromata_frontend/ui/auth/login/view_models/login_viewmodel.dart';
 import 'package:aromata_frontend/ui/auth/login/widgets/login_screen.dart';
 import 'package:aromata_frontend/ui/book_detail/view_models/book_detail_viewmodel.dart';
@@ -8,6 +9,8 @@ import 'package:aromata_frontend/ui/books_list/view_models/books_list_viewmodel.
 import 'package:aromata_frontend/ui/books_list/widgets/books_list_screen.dart';
 import 'package:aromata_frontend/ui/bulk_import/view_models/bulk_import_viewmodel.dart';
 import 'package:aromata_frontend/ui/bulk_import/widgets/bulk_import_screen.dart';
+import 'package:aromata_frontend/ui/bulk_import/widgets/bulk_import_processing_screen.dart';
+import 'package:aromata_frontend/ui/bulk_import/widgets/bulk_import_selection_screen.dart';
 import 'package:aromata_frontend/ui/create_book/view_models/create_book_viewmodel.dart';
 import 'package:aromata_frontend/ui/create_book/widgets/create_book_screen.dart';
 import 'package:aromata_frontend/ui/create_recipe/view_models/create_recipe_viewmodel.dart';
@@ -130,6 +133,54 @@ GoRouter router(AuthState authState) {
                           );
                           return BulkImportScreen(viewModel: viewModel);
                         },
+                        routes: [
+                          GoRoute(
+                            path: 'processing',
+                            name: RouteNames.bulkImportProcessing,
+                            builder: (context, state) {
+                              final bookId = state.pathParameters['bookId']!;
+                              final viewModel = BulkImportViewModel(
+                                bookId: bookId,
+                                recipeRepository: context.read(),
+                              );
+                              // Get viewModel from extra if available (from bulk import screen)
+                              final extra = state.extra;
+                              if (extra is Map<String, dynamic> &&
+                                  extra.containsKey('viewModel')) {
+                                return BulkImportProcessingScreen(
+                                  viewModel: extra['viewModel'] as BulkImportViewModel,
+                                );
+                              }
+                              return BulkImportProcessingScreen(
+                                viewModel: viewModel,
+                              );
+                            },
+                          ),
+                          GoRoute(
+                            path: 'selection',
+                            name: RouteNames.bulkImportSelection,
+                            builder: (context, state) {
+                              // Get viewModel from extra or recreate it
+                              final bookId = state.pathParameters['bookId']!;
+                              final viewModel = BulkImportViewModel(
+                                bookId: bookId,
+                                recipeRepository: context.read(),
+                              );
+                              // Restore extracted recipes from state if available
+                              final extra = state.extra;
+                              if (extra is Map<String, dynamic> &&
+                                  extra.containsKey('recipes')) {
+                                final recipesList = extra['recipes'] as List<dynamic>;
+                                final recipes = recipesList
+                                    .map((r) => r as Recipe)
+                                    .toList();
+                                viewModel.setExtractedRecipes(recipes);
+                              }
+                              return BulkImportSelectionScreen(
+                                  viewModel: viewModel);
+                            },
+                          ),
+                        ],
                       ),
                     ],
                   ),
